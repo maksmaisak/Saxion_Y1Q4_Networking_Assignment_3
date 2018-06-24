@@ -7,12 +7,21 @@ using UnityEngine.Assertions;
 public class Client : Singleton<Client>, IAgent
 {
     public FiniteStateMachine<Client> fsm { get; private set; }
-    public Connection connectionToServer { get; private set; }
+    public Connection connectionToServer  { get; private set; }
     
     void Start()
-    {        
+    {
         fsm = new FiniteStateMachine<Client>(this);
         fsm.ChangeState<ClientNotConnectedState>();
+    }
+
+    void Update()
+    {
+        if (connectionToServer != null && connectionToServer.state == Connection.State.Disconnected)
+        {
+            Destroy(connectionToServer.gameObject);
+            fsm.ChangeState<ClientNotConnectedState>();
+        }
     }
 
     public void SetConnectionToServer(Connection connection)

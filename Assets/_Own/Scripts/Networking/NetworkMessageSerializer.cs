@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 /// A helper class for reading and writing INetworkMessage to and from byte[].
 public static class NetworkMessageSerializer
@@ -30,7 +31,7 @@ public static class NetworkMessageSerializer
 
     public static void Serialize(INetworkMessage message, Stream outputStream)
     {
-        using (var writer = new MyWriter(outputStream))
+        using (var writer = new MyWriter(outputStream, Encoding.UTF8, leaveOpen: true))
         {
             Serialize(message, writer);
         }
@@ -38,7 +39,7 @@ public static class NetworkMessageSerializer
     
     public static INetworkMessage Deserialize(Stream stream)
     {
-        using (var reader = new MyReader(stream))
+        using (var reader = new MyReader(stream, Encoding.UTF8, leaveOpen: true))
         {
             return Deserialize(reader);
         }
@@ -74,7 +75,7 @@ public static class NetworkMessageSerializer
     }
 
     private static INetworkMessage Deserialize(MyReader reader)
-    {
+    {        
         byte typeIndex = 0;
         reader.Serialize(ref typeIndex);
         Type type = GetTypeBy(typeIndex);

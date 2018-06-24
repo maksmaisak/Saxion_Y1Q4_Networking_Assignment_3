@@ -21,7 +21,7 @@ public class Connection : MonoBehaviour
         
     private bool isInitialized;
 
-    private State state = State.NotStarted;
+    public State state { get; private set; }
 
     public void Initialize(TcpClient client)
     {
@@ -31,13 +31,12 @@ public class Connection : MonoBehaviour
         
         this.client = client;
         networkStream = client.GetStream();
-
+        
         isInitialized = true;
         
+        state = State.Running;
         new Thread(ReceivingThread) {IsBackground = true}.Start();
         new Thread(SendingThread  ) {IsBackground = true}.Start();
-
-        state = State.Running;
     }
 
     public void Send(INetworkMessage message)
@@ -89,6 +88,7 @@ public class Connection : MonoBehaviour
             INetworkMessage message;
             while (messagesToSend.TryDequeue(out message))
             {
+                Assert.IsNotNull(message);
                 NetworkMessageSerializer.Serialize(message, networkStream);
             }
         }

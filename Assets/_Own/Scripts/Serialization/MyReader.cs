@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 public class MyReader : IUnifiedSerializer, IDisposable 
 {
@@ -10,9 +11,9 @@ public class MyReader : IUnifiedSerializer, IDisposable
 
 	public Stream BaseStream => reader.BaseStream;
 
-	public MyReader(Stream stream) 
+	public MyReader(Stream stream, Encoding encoding, bool leaveOpen = true) 
 	{
-		reader = new BinaryReader(stream);
+		reader = new BinaryReader(stream, encoding, leaveOpen);
 	}
 
 	public void Serialize(ref bool    value) {value = reader.ReadBoolean();}

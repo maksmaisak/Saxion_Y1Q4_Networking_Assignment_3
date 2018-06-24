@@ -75,4 +75,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3df876665bb743c589752cefe68ac633, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  handshakeTimeout: 1
+  handshakeTimeout: 5

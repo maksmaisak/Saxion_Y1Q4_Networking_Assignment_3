@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine.Networking;
 
 public class ClientNotConnectedState : FSMState<Client>
 {
@@ -31,6 +30,7 @@ public class ClientNotConnectedState : FSMState<Client>
         base.Exit();
         
         asyncCancellationTokenSource?.Cancel();
+        connectionTask = null;
         
         connectPanel.UnregisterButtonConnectClickActions();
         connectPanel.DisableGUI();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 // Writes given values to a Stream
 public class MyWriter : IUnifiedSerializer, IDisposable 
@@ -11,9 +12,9 @@ public class MyWriter : IUnifiedSerializer, IDisposable
 
 	public Stream BaseStream => writer.BaseStream;
 
-	public MyWriter(Stream stream) 
+	public MyWriter(Stream stream, Encoding encoding, bool leaveOpen = true) 
 	{
-		writer = new BinaryWriter(stream);
+		writer = new BinaryWriter(stream, encoding, leaveOpen);
 	}
 		
 	public void Serialize(ref bool    value) {writer.Write(value);}

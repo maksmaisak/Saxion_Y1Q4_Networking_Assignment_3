@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 public class EventsManager : Singleton<EventsManager>
@@ -72,8 +73,16 @@ public class EventsManager : Singleton<EventsManager>
 
     private static IEventReceiverRegisterer MakeRegistererForEventType(Type eventType)
     {
-        Type registererType = typeof(EventReceiverRegisterer<>).MakeGenericType(eventType);
-        return (IEventReceiverRegisterer)Activator.CreateInstance(registererType);
+        try
+        {
+            Type registererType = typeof(EventReceiverRegisterer<>).MakeGenericType(eventType);
+            return (IEventReceiverRegisterer)Activator.CreateInstance(registererType);
+        }
+        catch (ArgumentException)
+        {
+            Debug.LogError($"Invalid generic parameter for {eventType}. It should inherit from NetworkMessage<{eventType.Name}>");
+            return null;
+        }
     }
 
     /// Registers event receivers

@@ -5,10 +5,10 @@ using UnityEngine;
 public class FiniteStateMachine<TAgent> where TAgent : Component, IAgent
 {
     // Maps the class name of a state to a specific instance of that state
-    private readonly Dictionary<Type, FSMState<TAgent>> stateCache;
+    private readonly Dictionary<Type, FsmState<TAgent>> stateCache;
 
     // The current state we are in
-    private FSMState<TAgent> currentState;
+    private FsmState<TAgent> currentState;
 
     // Reference to our target so we can pass into our new states.
     private readonly TAgent agent;
@@ -17,7 +17,7 @@ public class FiniteStateMachine<TAgent> where TAgent : Component, IAgent
     {
         this.agent = agent;
 
-        stateCache = new Dictionary<Type, FSMState<TAgent>>();
+        stateCache = new Dictionary<Type, FsmState<TAgent>>();
         DetectExistingStates();
     }
 
@@ -26,7 +26,7 @@ public class FiniteStateMachine<TAgent> where TAgent : Component, IAgent
         //if (currentState != null) Debug.Log("Executing state " + currentState);
     }
 
-    public FSMState<TAgent> GetCurrentState()
+    public FsmState<TAgent> GetCurrentState()
     {
         return currentState;
     }
@@ -43,7 +43,7 @@ public class FiniteStateMachine<TAgent> where TAgent : Component, IAgent
 	 * Tells the FSM to enter a state which is a subclass of AbstractState<T>.
 	 * So for exampe for FSM<Bob> the state entered must be a subclass of AbstractState<Bob>
 	 */
-    public void ChangeState<TState>() where TState : FSMState<TAgent>
+    public void ChangeState<TState>() where TState : FsmState<TAgent>
     {
         // Check if a state like this was already in our cache
         if (!stateCache.ContainsKey(typeof(TState)))
@@ -56,12 +56,12 @@ public class FiniteStateMachine<TAgent> where TAgent : Component, IAgent
         }
         else
         {
-            FSMState<TAgent> newState = stateCache[typeof(TState)];
+            FsmState<TAgent> newState = stateCache[typeof(TState)];
             ChangeState(newState);
         }
     }
 
-    private void ChangeState(FSMState<TAgent> newState)
+    private void ChangeState(FsmState<TAgent> newState)
     {
         if (currentState == newState) return;
 
@@ -72,8 +72,8 @@ public class FiniteStateMachine<TAgent> where TAgent : Component, IAgent
 
     private void DetectExistingStates()
     {
-        FSMState<TAgent>[] states = agent.GetComponentsInChildren<FSMState<TAgent>>();
-        foreach (FSMState<TAgent> state in states)
+        FsmState<TAgent>[] states = agent.GetComponentsInChildren<FsmState<TAgent>>();
+        foreach (FsmState<TAgent> state in states)
         {
             state.enabled = false;
             state.SetAgent(agent);

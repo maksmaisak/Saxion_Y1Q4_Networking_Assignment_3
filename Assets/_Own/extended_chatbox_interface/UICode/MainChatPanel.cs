@@ -80,7 +80,7 @@ public class MainChatPanel : BasePanel {
         _focusedRequested = true;
     }
 
-    public void AddChatLine (string pChatLine)
+    public void AddChatLine(string pChatLine)
     {
         _chatText.text += pChatLine + "\n";
         _scrollView.verticalNormalizedPosition = 0;
@@ -91,10 +91,10 @@ public class MainChatPanel : BasePanel {
         _chatText.text = "";
     }
 
-    public void RegisterButtonSendClickAction (UnityAction pAction)
+    public void RegisterButtonSendClickAction(UnityAction pAction)
     {
         _send.onClick.AddListener(pAction);
-        _chatEntry.onEndEdit.AddListener((value) => pAction());
+        _chatEntry.onEndEdit.AddListener(value => pAction());
         _focusedRequested = true;
     }
 

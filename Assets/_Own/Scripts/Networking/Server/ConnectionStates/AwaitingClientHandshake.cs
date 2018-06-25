@@ -1,8 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class AwaitingClientHandshake : 
-    FSMState<ServerSideConnectionHandler>, 
+public class AwaitingClientHandshake : FsmState<ServerSideConnectionHandler>, 
     IEventReceiver<ClientHandshake>
 {
     [SerializeField] float handshakeTimeout = 1f;
@@ -15,9 +14,9 @@ public class AwaitingClientHandshake :
         timeLeftForHandshake = handshakeTimeout;
     }
 
-    void Update()
+    void FixedUpdaet()
     {
-        timeLeftForHandshake -= Time.deltaTime;
+        timeLeftForHandshake -= Time.fixedDeltaTime;
         if (timeLeftForHandshake > 0f) return;
 
         Debug.Log("Client handshake timeout. Kicking client.");
@@ -26,14 +25,17 @@ public class AwaitingClientHandshake :
 
     public void On(ClientHandshake handshake)
     {
+        if (handshake.originConnection != agent.connection) return;
+        
         try
         {
             handshake.ThrowIfInvalidProtocolIdentifier();
-            agent.fsm.ChangeState<AfterClientHandshake>();
+            Debug.Log("Valid client handshake received.");
+            agent.fsm.ChangeState<AwaitingClientJoinRequest>();
         }
         catch (ClientHandshake.InvalidClientHandshakeException)
         {
-            Debug.Log("Invalid handshake. Kicking client.");
+            Debug.Log("Invalid client handshake. Kicking client.");
             KickClient();
         }
     }

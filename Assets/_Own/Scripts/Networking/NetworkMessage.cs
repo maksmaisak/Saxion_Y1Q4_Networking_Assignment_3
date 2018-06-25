@@ -16,12 +16,12 @@ public abstract class NetworkMessage<T> : BroadcastEvent<T>, INetworkMessage
     
     public void InitializeOnReceived(Connection originConnection)
     {
-        Assert.IsFalse(isInitializedOnReceived, this + "has already been initialized.");
+        Assert.IsFalse(isInitializedOnReceived, this + " has already been initialized.");
         
         this.originConnection = originConnection;
 
         isInitializedOnReceived = true;
     }
     
-    public abstract void Serialize(IUnifiedSerializer serializer);
+    public abstract void Serialize(IUnifiedSerializer s);
 }

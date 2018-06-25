@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Concurrent;
 using UnityEngine.Assertions;
+using Debug = UnityEngine.Debug;
 
 public class Connection : MonoBehaviour
 {
@@ -14,14 +15,17 @@ public class Connection : MonoBehaviour
         Running,
         Disconnected
     }
-        
+    
     private TcpClient client;
     private NetworkStream networkStream;
     private readonly ConcurrentQueue<INetworkMessage> messagesToSend = new ConcurrentQueue<INetworkMessage>();
-        
-    private bool isInitialized;
 
+    private bool isInitialized;
+    private bool didReceiveSinceLastUpdate;
+    
     public State state { get; private set; }
+    public float timeOfLastReceive { get; private set; }
+    public float timeSinceLastReceive => Time.time - timeOfLastReceive;
 
     public void Initialize(TcpClient client)
     {
@@ -34,6 +38,7 @@ public class Connection : MonoBehaviour
         
         isInitialized = true;
         
+        timeOfLastReceive = Time.time;
         state = State.Running;
         new Thread(ReceivingThread) {IsBackground = true}.Start();
         new Thread(SendingThread  ) {IsBackground = true}.Start();
@@ -48,12 +53,22 @@ public class Connection : MonoBehaviour
 
     public void Close()
     {
+        // TODO Push all messages in queue before actually closing the stream. 
         CloseConnection();
     }
     
     void OnDestroy()
     {
         CloseConnection();
+    }
+    
+    private void FixedUpdate()
+    {
+        if (didReceiveSinceLastUpdate)
+        {
+            timeOfLastReceive = Time.time;
+            didReceiveSinceLastUpdate = false;
+        }
     }
 
     private void ReceivingThread()
@@ -64,7 +79,10 @@ public class Connection : MonoBehaviour
             {
                 INetworkMessage message = NetworkMessageSerializer.Deserialize(networkStream);
                 message.InitializeOnReceived(this);
+                Debug.Log("Received " + message);
                 message.PostEvent();
+
+                didReceiveSinceLastUpdate = true;
             }
             catch (Exception ex)
             {
@@ -89,6 +107,7 @@ public class Connection : MonoBehaviour
             while (messagesToSend.TryDequeue(out message))
             {
                 Assert.IsNotNull(message);
+                Debug.Log("Sending " + message);
                 NetworkMessageSerializer.Serialize(message, networkStream);
             }
         }

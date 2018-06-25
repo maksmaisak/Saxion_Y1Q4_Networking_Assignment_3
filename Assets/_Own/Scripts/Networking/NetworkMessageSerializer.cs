@@ -2,7 +2,10 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using UnityEngine;
+using UnityEngine.Assertions;
 
 /// A helper class for reading and writing INetworkMessage to and from byte[].
 public static class NetworkMessageSerializer
@@ -17,8 +20,12 @@ public static class NetworkMessageSerializer
     private static readonly Dictionary<Type, ushort> MessageTypeIndices = new Dictionary<Type, ushort>();
 
     static NetworkMessageSerializer()
-    {        
-        MessageTypeInfos = GetMessageTypes()
+    {
+        var messageTypes = GetMessageTypes();
+        
+        CheckAllMessageTypesHaveAPublicParameterlessConstructor(messageTypes);
+        
+        MessageTypeInfos = messageTypes
             .Select(type => new MessageTypeInfo {type = type, name = GetMessageTypeName(type)})
             .ToArray();
         
@@ -37,9 +44,9 @@ public static class NetworkMessageSerializer
         }
     }
     
-    public static INetworkMessage Deserialize(Stream stream)
+    public static INetworkMessage Deserialize(Stream inputStream)
     {
-        using (var reader = new MyReader(stream, Encoding.UTF8, leaveOpen: true))
+        using (var reader = new MyReader(inputStream, Encoding.UTF8, leaveOpen: true))
         {
             return Deserialize(reader);
         }
@@ -76,7 +83,7 @@ public static class NetworkMessageSerializer
 
     private static INetworkMessage Deserialize(MyReader reader)
     {        
-        byte typeIndex = 0;
+        ushort typeIndex = 0;
         reader.Serialize(ref typeIndex);
         Type type = GetTypeBy(typeIndex);
 
@@ -86,7 +93,7 @@ public static class NetworkMessageSerializer
     }
     
     #region Reflection helpers
-    
+
     private static IEnumerable<Type> GetMessageTypes()
     {
         Type messsageBaseType = typeof(INetworkMessage);
@@ -109,6 +116,30 @@ public static class NetworkMessageSerializer
             .GetCustomAttributes(inherit: true)
             .OfType<NetworkMessageAttribute>()
             .LastOrDefault();
+    }
+    
+    private static void CheckAllMessageTypesHaveAPublicParameterlessConstructor(IEnumerable<Type> messageTypes)
+    {
+        foreach (Type messageType in messageTypes)
+        {
+            if (!HasPublicParameterlessConstructor(messageType))
+            {
+                Debug.LogError($"Network message type {messageType} must doesn't have a public parameterless constructor. All network message types must have one.");
+            }
+        }
+    }
+
+    private static bool HasPublicParameterlessConstructor(Type type)
+    {
+        return type
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public)
+            .Any(IsConstructorParameterless);
+    }
+
+    private static bool IsConstructorParameterless(ConstructorInfo info)
+    {
+        ParameterInfo[] parameters = info.GetParameters();
+        return parameters.Length == 0 || parameters.All(p => p.IsOptional);
     }
 
     #endregion

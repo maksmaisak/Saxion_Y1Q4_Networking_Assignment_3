@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class ClientNotConnectedState : FSMState<Client>
+public class ClientNotConnectedState : FsmState<Client>
 {
     [SerializeField] ConnectPanel connectPanel;
     [SerializeField] private Connection connectionPrefab;
@@ -56,25 +56,28 @@ public class ClientNotConnectedState : FSMState<Client>
 
         if (connectionTask == null) return;
 
-        if (connectionTask.IsCompleted)
+        if (!connectionTask.IsCompleted)
         {
-            Debug.Log("Connection task complete.");
-
-            asyncCancellationTokenSource.Dispose();
-            asyncCancellationTokenSource = null;
-
-            TcpClient connectedClient = connectionTask.Result;
-            var connection = Instantiate(connectionPrefab, transform);
-            connection.Initialize(connectedClient);
-
-            agent.SetConnectionToServer(connection);
-            
-            agent.fsm.ChangeState<ClientChooseNameState>();
-        }
-        else
-        {
+            connectPanel.SetStatusbarText("Connecting...");
             Debug.Log("Connection task pending...");
+            return;
         }
+
+        connectPanel.SetStatusbarText("Connected.");
+        Debug.Log("Connection task complete.");
+
+        asyncCancellationTokenSource.Dispose();
+        asyncCancellationTokenSource = null;
+
+        TcpClient connectedClient = connectionTask.Result;
+        Connection connection = Instantiate(connectionPrefab, transform);
+        connection.gameObject.name = $"ClientSideConnection ({connectedClient.Client.RemoteEndPoint})";
+        connection.Initialize(connectedClient);
+
+        agent.SetConnectionToServer(connection);
+        agent.connectionToServer.Send(new ClientHandshake());
+            
+        agent.fsm.ChangeState<ClientChooseNameState>();
     }
 
     private void OnConnectButtonClicked()
@@ -100,7 +103,7 @@ public class ClientNotConnectedState : FSMState<Client>
     private static async Task<TcpClient> TryConnectAsync(IPEndPoint remoteEndPoint, CancellationToken cancellationToken)
     {
         TcpClient client = null;
-
+        
         while (true)
         {
             try

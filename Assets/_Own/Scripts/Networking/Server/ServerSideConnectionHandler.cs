@@ -6,6 +6,7 @@ public class ServerSideConnectionHandler : MonoBehaviour, IAgent
 {
     public FiniteStateMachine<ServerSideConnectionHandler> fsm { get; private set; }
     public Connection connection { get; private set; }
+    public string clientNickname { get; set; }
     
     void Start()
     {
@@ -15,5 +16,13 @@ public class ServerSideConnectionHandler : MonoBehaviour, IAgent
         Assert.IsNotNull(connection);
         
         fsm.ChangeState<AwaitingClientHandshake>();
+    }
+
+    void FixedUpdate()
+    {
+        if (connection.state == Connection.State.Disconnected)
+        {
+            Destroy(gameObject);
+        }
     }
 }

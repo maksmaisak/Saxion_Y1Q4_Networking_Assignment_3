@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class Client : Singleton<Client>, IAgent
+public class Client : Singleton<Client>, IAgent, IEventReceiver<DisconnectMessage>
 {
     public FiniteStateMachine<Client> fsm { get; private set; }
     public Connection connectionToServer  { get; private set; }
@@ -17,7 +17,7 @@ public class Client : Singleton<Client>, IAgent
 
     void Update()
     {
-        if (connectionToServer != null && connectionToServer.state == Connection.State.Disconnected)
+        if (connectionToServer && connectionToServer.state == Connection.State.Closed)
         {
             Destroy(connectionToServer.gameObject);
             fsm.ChangeState<ClientNotConnectedState>();
@@ -29,5 +29,10 @@ public class Client : Singleton<Client>, IAgent
         Assert.IsNull(connectionToServer, "Connection to server is already assigned.");
 
         connectionToServer = connection;
+    }
+
+    public void On(DisconnectMessage eventData)
+    {
+        connectionToServer.Close();
     }
 }

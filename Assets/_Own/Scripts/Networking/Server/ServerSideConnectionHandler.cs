@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 [RequireComponent(typeof(Connection))]
-public class ServerSideConnectionHandler : MonoBehaviour, IAgent, IEventReceiver<INetworkMessage>
+public class ServerSideConnectionHandler : MonoBehaviour, IAgent, IEventReceiver<DisconnectMessage>
 {
     public FiniteStateMachine<ServerSideConnectionHandler> fsm { get; private set; }
     public Connection connection { get; private set; }
@@ -21,20 +21,14 @@ public class ServerSideConnectionHandler : MonoBehaviour, IAgent, IEventReceiver
 
     void FixedUpdate()
     {
-        if (connection.state == Connection.State.Disconnected)
+        if (connection.state == Connection.State.Closed)
         {
             Destroy(gameObject);
         }
     }
     
-    public void On(INetworkMessage eventData)
+    public void On(DisconnectMessage eventData)
     {
-        if (eventData.originConnection != connection) return;
-
-        bool isValidMessage = new System.Type[]
-        {
-            typeof(ClientHandshake)
-        }.Contains(eventData.GetType());
-        // TODO
+        connection.Close();
     }
 }

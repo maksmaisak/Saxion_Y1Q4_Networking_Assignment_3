@@ -47,6 +47,7 @@ public class Server : Singleton<Server>
             
             Connection connection = Instantiate(connectionPrefab, transform);
             connection.gameObject.name = $"ServerSideConnection ({client.Client.RemoteEndPoint})";
+
             connection.Initialize(client);
 
             connections.AddLast(connection);
@@ -56,7 +57,7 @@ public class Server : Singleton<Server>
     
     public void SendAllClients(INetworkMessage message)
     {
-        var toRemove = connections.Where(c => !c || c == null || c.state == Connection.State.Disconnected);
+        var toRemove = connections.Where(c => !c || c == null || c.state == Connection.State.Closed);
         foreach (Connection connection in toRemove)
         {
             connections.Remove(connection);

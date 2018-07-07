@@ -14,6 +14,8 @@ public class ClientChooseNameState : FsmState<Client>,
         nameChoosePanel.EnableGUI();
         nameChoosePanel.RegisterButtonJoinClickAction(OnJoinButtonClicked);
         nameChoosePanel.SetStatusbarText("");
+
+        didSendJoinRequest = false;
     }
 
     public override void Exit()

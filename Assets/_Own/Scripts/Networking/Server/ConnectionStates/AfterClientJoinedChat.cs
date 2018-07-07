@@ -25,7 +25,9 @@ public class AfterClientJoinedChat : FsmState<ServerSideConnectionHandler>,
             nickname = agent.clientNickname,
             message = eventData.message
         };
-        
-        Server.Instance.SendAllClients(message);
+
+        var server = Server.Instance;
+        server.state.AddLine(message.GetChatLine());
+        server.SendAllClients(message);
     }
 }

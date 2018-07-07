@@ -11,4 +11,5 @@ public class ChatboxState
     public void AddNickname   (string nickname) => nicknames.Add     (nickname);
     public void RemoveNickname(string nickname) => nicknames.Remove  (nickname);
     public bool HasNickname   (string nickname) => nicknames.Contains(nickname);
+    public IEnumerable<string> GetNicknames() => nicknames;
 }

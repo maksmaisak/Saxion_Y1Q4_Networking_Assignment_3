@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 public class AwaitingClientJoinRequest : FsmState<ServerSideConnectionHandler>,
     IEventReceiver<JoinChatRequest>
@@ -23,9 +24,11 @@ public class AwaitingClientJoinRequest : FsmState<ServerSideConnectionHandler>,
         agent.clientNickname = request.nickname;
 
         agent.connection.Send(JoinChatResponse.Accept);
-        var usernames = new[]{"Alice", "Bob", "Claire"};
-        var lines = new[] {"Test line 1", "Test line 2"};
-        agent.connection.Send(new TableState {usernames = usernames, lines = lines});
+        agent.connection.Send(new TableStateMessage
+        {
+            nicknames = server.state.GetNicknames().ToArray(), 
+            lines = server.state.GetLines().ToArray()
+        });
         
         agent.fsm.ChangeState<AfterClientJoinedChat>();
     }

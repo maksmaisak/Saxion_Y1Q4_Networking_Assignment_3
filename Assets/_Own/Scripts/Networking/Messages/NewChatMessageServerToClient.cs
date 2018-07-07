@@ -3,6 +3,7 @@ using System.Globalization;
 
 public class NewChatMessageServerToClient : NetworkMessage<NewChatMessageServerToClient>
 {
+    // TODO Maybe just store the final string?
     public DateTime timestamp;
     public string nickname;
     public string message;

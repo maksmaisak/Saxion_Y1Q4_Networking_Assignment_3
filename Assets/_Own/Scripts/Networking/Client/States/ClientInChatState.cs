@@ -4,7 +4,7 @@ using UnityEngine.Assertions;
 
 public class ClientInChatState : FsmState<Client>,
     IEventReceiver<NewChatMessageServerToClient>,
-    IEventReceiver<TableState>
+    IEventReceiver<TableStateMessage>
 {
     [SerializeField] MainChatPanel chatPanel;
     
@@ -18,7 +18,7 @@ public class ClientInChatState : FsmState<Client>,
         chatPanel.ClearAllText();
 
         chatPanel.RegisterButtonSendClickAction(OnClickButtonSend);
-        //chatPanel.RegisterButtonDisconnectClickAction(TODO);
+        chatPanel.RegisterButtonDisconnectClickAction(OnClickButtonDisconnect);
     }
 
     public override void Exit()
@@ -30,19 +30,10 @@ public class ClientInChatState : FsmState<Client>,
         chatPanel.UnregisterButtonSendClickActions();
         chatPanel.UnregisterButtonDisconnectClickActions();
     }
-
-    private void OnClickButtonSend()
-    {
-        string message = chatPanel.GetChatEntry();
-        if (string.IsNullOrEmpty(message)) return;
-        
-        agent.connectionToServer.Send(new NewChatMessageClientToServer(message));
-        chatPanel.SetChatEntry("");
-    }
     
-    public void On(TableState eventData)
-    {
-        foreach (string username in eventData.usernames)
+    public void On(TableStateMessage eventData)
+    {        
+        foreach (string username in eventData.nicknames)
         {
             chatPanel.AddUser(username);
         }
@@ -58,5 +49,25 @@ public class ClientInChatState : FsmState<Client>,
         Assert.IsTrue(isEntered);
         
         chatPanel.AddChatLine(eventData.GetChatLine());
+    }
+
+    private void OnClickButtonSend()
+    {
+        Debug.Log("OnClickButtonSend");
+        
+        string message = chatPanel.GetChatEntry();
+        if (string.IsNullOrEmpty(message)) return;
+
+        agent.connectionToServer.Send(new NewChatMessageClientToServer(message));
+        
+        chatPanel.SetChatEntry("");
+    }
+    
+    private void OnClickButtonDisconnect()
+    {
+        Debug.Log("OnClickButtonDisconnect");
+        
+        agent.connectionToServer.Send(new DisconnectMessage());
+        agent.connectionToServer.Close();
     }
 }

@@ -16,6 +16,7 @@ public class ClientInChatState : FsmState<Client>,
 
         chatPanel.EnableGUI();
         chatPanel.ClearAllText();
+        chatPanel.RemoveAllUsers();
 
         chatPanel.RegisterButtonSendClickAction(OnClickButtonSend);
         chatPanel.RegisterButtonDisconnectClickAction(OnClickButtonDisconnect);

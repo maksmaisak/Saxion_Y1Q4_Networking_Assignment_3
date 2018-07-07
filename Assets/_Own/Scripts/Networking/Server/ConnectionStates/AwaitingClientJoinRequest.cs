@@ -13,7 +13,6 @@ public class AwaitingClientJoinRequest : FsmState<ServerSideConnectionHandler>,
         {
             var message = JoinChatResponse.MakeReject($"Username {request.nickname} is already taken.");
             agent.connection.Send(message);
-            agent.connection.Close();
             return;
         }
         

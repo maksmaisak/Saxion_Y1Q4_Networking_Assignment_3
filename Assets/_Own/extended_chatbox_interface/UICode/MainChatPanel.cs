@@ -52,7 +52,7 @@ public class MainChatPanel : BasePanel {
         }
     }
 
-    public void RemoveUser (string pUserName)
+    public void RemoveUser(string pUserName)
     {
         if (_userButtonMap.ContainsKey(pUserName))
         {

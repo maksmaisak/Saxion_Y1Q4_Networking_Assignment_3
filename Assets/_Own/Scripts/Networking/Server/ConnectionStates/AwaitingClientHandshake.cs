@@ -14,7 +14,7 @@ public class AwaitingClientHandshake : FsmState<ServerSideConnectionHandler>,
         timeLeftForHandshake = handshakeTimeout;
     }
 
-    void FixedUpdaet()
+    void FixedUpdate()
     {
         timeLeftForHandshake -= Time.fixedDeltaTime;
         if (timeLeftForHandshake > 0f) return;

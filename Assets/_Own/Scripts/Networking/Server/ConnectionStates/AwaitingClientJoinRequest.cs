@@ -8,7 +8,7 @@ public class AwaitingClientJoinRequest : FsmState<ServerSideConnectionHandler>,
         if (request.originConnection != agent.connection) return;
 
         Server server = Server.Instance;
-        if (server.HasNickname(request.nickname))
+        if (server.state.HasNickname(request.nickname))
         {
             var message = JoinChatResponse.MakeReject($"Username {request.nickname} is already taken.");
             agent.connection.Send(message);
@@ -19,10 +19,13 @@ public class AwaitingClientJoinRequest : FsmState<ServerSideConnectionHandler>,
         // TODO check if request.nickName is valid. If not, send a reject and close the connection. 
         // TODO ? Have a state to do the disconnecting.
 
-        server.AddUsername(request.nickname);
+        server.state.AddNickname(request.nickname);
         agent.clientNickname = request.nickname;
-        
+
         agent.connection.Send(JoinChatResponse.Accept);
+        var usernames = new[]{"Alice", "Bob", "Claire"};
+        var lines = new[] {"Test line 1", "Test line 2"};
+        agent.connection.Send(new TableState {usernames = usernames, lines = lines});
         
         agent.fsm.ChangeState<AfterClientJoinedChat>();
     }

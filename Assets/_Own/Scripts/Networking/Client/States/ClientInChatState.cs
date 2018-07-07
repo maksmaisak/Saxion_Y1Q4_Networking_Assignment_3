@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 public class ClientInChatState : FsmState<Client>,
-    IEventReceiver<NewChatMessageServerToClient>
+    IEventReceiver<NewChatMessageServerToClient>,
+    IEventReceiver<TableState>
 {
     [SerializeField] MainChatPanel chatPanel;
     
@@ -38,11 +39,24 @@ public class ClientInChatState : FsmState<Client>,
         agent.connectionToServer.Send(new NewChatMessageClientToServer(message));
         chatPanel.SetChatEntry("");
     }
+    
+    public void On(TableState eventData)
+    {
+        foreach (string username in eventData.usernames)
+        {
+            chatPanel.AddUser(username);
+        }
+
+        foreach (string line in eventData.lines)
+        {
+            chatPanel.AddChatLine(line);
+        }
+    }
 
     public void On(NewChatMessageServerToClient eventData)
     {
         Assert.IsTrue(isEntered);
         
-        chatPanel.AddChatLine($"{DateTime.Now.TimeOfDay} {eventData.nickname}: {eventData.message}");
+        chatPanel.AddChatLine(eventData.GetChatLine());
     }
 }

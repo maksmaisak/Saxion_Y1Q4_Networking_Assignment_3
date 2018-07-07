@@ -14,16 +14,19 @@ public class Server : Singleton<Server>
     [SerializeField] int portNumber = 55555;
     [SerializeField] Connection connectionPrefab;
     
+    public ChatboxState state { get; private set; }
+    
     private readonly ConcurrentQueue<TcpClient> pendingConnectedTcpClients = new ConcurrentQueue<TcpClient>();
     // TODO Remove closed connections frome here.
     private readonly LinkedList<Connection> connections = new LinkedList<Connection>();
-    private readonly HashSet<string> nicknames = new HashSet<string>();
 
     private Thread listeningThread;
     
     void Start()
     {
         Assert.IsNotNull(connectionPrefab);
+        
+        state = new ChatboxState();
 
         listeningThread = new Thread(Listen) {IsBackground = true};
         listeningThread.Start();
@@ -50,11 +53,7 @@ public class Server : Singleton<Server>
             new NewConnection(connection).PostEvent();
         }
     }
-
-    public void AddUsername   (string nickname) => nicknames.Add     (nickname);
-    public void RemoveUsername(string nickname) => nicknames.Remove  (nickname);
-    public bool HasNickname   (string nickname) => nicknames.Contains(nickname);
-
+    
     public void SendAllClients(INetworkMessage message)
     {
         var toRemove = connections.Where(c => !c || c == null || c.state == Connection.State.Disconnected);

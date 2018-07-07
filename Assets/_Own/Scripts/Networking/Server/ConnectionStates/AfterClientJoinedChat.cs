@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 public class AfterClientJoinedChat : FsmState<ServerSideConnectionHandler>,
@@ -12,13 +13,19 @@ public class AfterClientJoinedChat : FsmState<ServerSideConnectionHandler>,
             agent.connection.Send(message);
         }*/
     }
-
+    
     public void On(NewChatMessageClientToServer eventData)
     {
         if (eventData.originConnection != agent.connection) return;
-
+        
         Assert.IsNotNull(agent.clientNickname);
-        var message = new NewChatMessageServerToClient(agent.clientNickname, eventData.message);
+        var message = new NewChatMessageServerToClient
+        {
+            timestamp = DateTime.Now,
+            nickname = agent.clientNickname,
+            message = eventData.message
+        };
+        
         Server.Instance.SendAllClients(message);
     }
 }

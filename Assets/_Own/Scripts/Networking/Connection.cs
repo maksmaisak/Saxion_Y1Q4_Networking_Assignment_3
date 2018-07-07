@@ -16,16 +16,20 @@ public class Connection : MonoBehaviour
         Disconnected
     }
     
-    private TcpClient client;
-    private NetworkStream networkStream;
-    private readonly ConcurrentQueue<INetworkMessage> messagesToSend = new ConcurrentQueue<INetworkMessage>();
-
-    private bool isInitialized;
-    private bool didReceiveSinceLastUpdate;
+    public delegate void NetworkMessageHandler(Connection source, INetworkMessage message);
+    public event NetworkMessageHandler OnMessageReceived;
     
     public State state { get; private set; }
     public float timeOfLastReceive { get; private set; }
     public float timeSinceLastReceive => Time.time - timeOfLastReceive;
+    
+    private TcpClient client;
+    private NetworkStream networkStream;
+    private readonly ConcurrentQueue<INetworkMessage> messagesToSend    = new ConcurrentQueue<INetworkMessage>();
+    private readonly ConcurrentQueue<INetworkMessage> messagesToProcess = new ConcurrentQueue<INetworkMessage>();
+    
+    private bool isInitialized;
+    private bool didReceiveSinceLastUpdate;
 
     public void Initialize(TcpClient client)
     {
@@ -69,6 +73,12 @@ public class Connection : MonoBehaviour
             timeOfLastReceive = Time.time;
             didReceiveSinceLastUpdate = false;
         }
+
+        INetworkMessage message = null;
+        while (messagesToProcess.TryDequeue(out message))
+        {
+            OnMessageReceived?.Invoke(this, message);
+        }
     }
 
     private void ReceivingThread()
@@ -80,6 +90,8 @@ public class Connection : MonoBehaviour
                 INetworkMessage message = NetworkMessageSerializer.Deserialize(networkStream);
                 message.InitializeOnReceived(this);
                 Debug.Log("Received " + message);
+                
+                messagesToProcess.Enqueue(message);
                 message.PostEvent();
 
                 didReceiveSinceLastUpdate = true;

@@ -150,10 +150,7 @@ public static class NetworkMessageSerializer
         bool indexFound = MessageTypeIndices.TryGetValue(type, out typeIndex);
         if (!indexFound)
         {
-            throw new ArgumentException(String.Format(
-                "Couldn't find type index of given type ({0})!",
-                type
-            ));
+            throw new ArgumentException($"Couldn't find type index of given type ({type})!");
         }
 
         return typeIndex;
@@ -163,10 +160,7 @@ public static class NetworkMessageSerializer
     {
         if (typeIndex >= MessageTypeInfos.Length)
         {
-            throw new ArgumentException(String.Format(
-                "Couldn't find type for given type index ({0})!",
-                typeIndex
-            ));
+            throw new ArgumentException($"Couldn't find type for given type index ({typeIndex})!");
         }
 
         return MessageTypeInfos[typeIndex].type;

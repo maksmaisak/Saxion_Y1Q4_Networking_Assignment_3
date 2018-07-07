@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.Assertions;
 
 public class FsmState<T> : MyBehaviour where T : class, IAgent
@@ -13,7 +14,9 @@ public class FsmState<T> : MyBehaviour where T : class, IAgent
         Assert.IsNull(this.agent, this + ": agent is already set.");
         this.agent = agent;
     }
-
+    
+    // TODO This is error-prone if inheritors accidentally don't call base.Enter/base.Exit
+    
     public virtual void Enter()
     {
         Assert.IsFalse(isEntered, this + " is already entered. Can't Enter state.");
@@ -34,5 +37,4 @@ public class FsmState<T> : MyBehaviour where T : class, IAgent
         isEntered = false;
     }
 }
-
 

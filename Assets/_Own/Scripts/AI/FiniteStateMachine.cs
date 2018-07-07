@@ -43,22 +43,20 @@ public class FiniteStateMachine<TAgent> where TAgent : Component, IAgent
 	 * Tells the FSM to enter a state which is a subclass of AbstractState<T>.
 	 * So for exampe for FSM<Bob> the state entered must be a subclass of AbstractState<Bob>
 	 */
-    public void ChangeState<TState>() where TState : FsmState<TAgent>
+    public TState ChangeState<TState>() where TState : FsmState<TAgent>
     {
-        // Check if a state like this was already in our cache
-        if (!stateCache.ContainsKey(typeof(TState)))
+        FsmState<TAgent> state = null;
+        // Check if a state like this was already in the cache
+        if (!stateCache.TryGetValue(typeof(TState), out state))
         {
-            // If not, create it, passing in the target
-            TState state = agent.gameObject.AddComponent<TState>();
+            // If not, create it, passing in the agent
+            state = agent.gameObject.AddComponent<TState>();
             state.SetAgent(agent);
             stateCache[typeof(TState)] = state;
-            ChangeState(state);
         }
-        else
-        {
-            FsmState<TAgent> newState = stateCache[typeof(TState)];
-            ChangeState(newState);
-        }
+        
+        ChangeState(state);
+        return (TState)state;
     }
 
     private void ChangeState(FsmState<TAgent> newState)

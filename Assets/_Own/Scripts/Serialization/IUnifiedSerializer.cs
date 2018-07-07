@@ -5,7 +5,7 @@ using System.IO;
 using UnityEngine;
 
 /// Either writes the given values to a stream, 
-/// or reads data into the given values from that stream.
+/// or reads data from that stream into the given variables.
 public interface IUnifiedSerializer 
 {
 	bool isWriting {get;}

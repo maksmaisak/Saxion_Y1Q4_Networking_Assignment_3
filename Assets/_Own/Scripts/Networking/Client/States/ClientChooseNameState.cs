@@ -48,7 +48,7 @@ public class ClientChooseNameState : FsmState<Client>,
             nameChoosePanel.SetStatusbarText("Rejected. Reason: " + response.rejectionMessage);
             return;
         }
-        
+
         agent.fsm.ChangeState<ClientInChatState>();
     }
 }

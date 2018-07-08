@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine.Assertions;
 
 public class ChatboxState
 {
@@ -6,10 +7,30 @@ public class ChatboxState
     private readonly HashSet<string> nicknames = new HashSet<string>();
 
     public IReadOnlyCollection<string> GetLines() => lines.AsReadOnly();
-    public void AddLine(string line) => lines.Add(line);
-    
-    public void AddNickname   (string nickname) => nicknames.Add     (nickname);
-    public void RemoveNickname(string nickname) => nicknames.Remove  (nickname);
+
+    public void AddLine(string line)
+    {
+        lines.Add(line);
+    }
+
+    public bool AddNickname(string nickname)
+    {        
+        if (!nicknames.Add(nickname)) return false;
+        
+        Server.Instance.SendAllClients(new UserJoinedMessage(nickname));
+        Server.Instance.SendAllClients(NewChatEntryMessage.MakeWithTimestamp($"{nickname} has joined the chat.", NewChatEntryMessage.Kind.ServerMessage));
+        return true;
+    }
+
+    public bool RemoveNickname(string nickname)
+    {
+        if (!nicknames.Remove(nickname)) return false;
+        
+        Server.Instance.SendAllClients(new UserLeftMessage(nickname));
+        Server.Instance.SendAllClients(NewChatEntryMessage.MakeWithTimestamp($"{nickname} has left the chat.", NewChatEntryMessage.Kind.ServerMessage));
+        return true;
+    }
+
     public bool HasNickname   (string nickname) => nicknames.Contains(nickname);
     public IEnumerable<string> GetNicknames() => nicknames;
 }

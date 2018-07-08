@@ -22,7 +22,7 @@ public class ServerConnectionStateClientInChat : FsmState<ServerSideConnectionHa
         Assert.IsNotNull(agent.clientNickname);
         
         string chatMessage = $"{GetTimestampNow()} {agent.clientNickname}: {eventData.message}";
-        var message = new NewChatMessageServerToClient(chatMessage);
+        var message = new NewChatEntryMessage(chatMessage);
 
         var server = Server.Instance;
         server.state.AddLine(chatMessage);
@@ -40,7 +40,7 @@ public class ServerConnectionStateClientInChat : FsmState<ServerSideConnectionHa
 
         string chatMessage = $"{GetTimestampNow()} {HelpResponseMessage}";
 
-        var message = NewChatMessageServerToClient.MakeWithTimestamp(chatMessage, NewChatMessageServerToClient.Kind.ServerMessage);
+        var message = NewChatEntryMessage.MakeWithTimestamp(chatMessage, NewChatEntryMessage.Kind.ServerMessage);
         eventData.originConnection.Send(message);
     }
 

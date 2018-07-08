@@ -3,8 +3,10 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 public class ClientInChatState : FsmState<Client>,
-    IEventReceiver<NewChatMessageServerToClient>,
-    IEventReceiver<TableStateMessage>
+    IEventReceiver<NewChatEntryMessage>,
+    IEventReceiver<TableStateMessage>,
+    IEventReceiver<UserJoinedMessage>,
+    IEventReceiver<UserLeftMessage>
 {
     [SerializeField] MainChatPanel chatPanel;
     
@@ -33,7 +35,9 @@ public class ClientInChatState : FsmState<Client>,
     }
     
     public void On(TableStateMessage eventData)
-    {        
+    {
+        Assert.IsTrue(isEntered);
+        
         foreach (string username in eventData.nicknames)
         {
             chatPanel.AddUser(username);
@@ -45,21 +49,35 @@ public class ClientInChatState : FsmState<Client>,
         }
     }
 
-    public void On(NewChatMessageServerToClient eventData)
+    public void On(NewChatEntryMessage eventData)
     {
         Assert.IsTrue(isEntered);
 
         var message = eventData.message;
         switch (eventData.kind)
         {
-            case NewChatMessageServerToClient.Kind.ServerMessage:
-                message = $"<color=green>{message}</color>";
+            case NewChatEntryMessage.Kind.ServerMessage:
+                message = FormatServerMessage(message);
                 break;
             default:
                 break;
         }
 
         chatPanel.AddChatLine(message);
+    }
+    
+    public void On(UserJoinedMessage eventData)
+    {
+        Assert.IsTrue(isEntered);
+
+        chatPanel.AddUser(eventData.nickname);
+    }
+
+    public void On(UserLeftMessage eventData)
+    {
+        Assert.IsTrue(isEntered);
+        
+        chatPanel.RemoveUser(eventData.nickname);
     }
 
     private void OnClickButtonSend()
@@ -69,7 +87,7 @@ public class ClientInChatState : FsmState<Client>,
         string message = chatPanel.GetChatEntry();
         if (string.IsNullOrEmpty(message)) return;
 
-        SendMessage(message);
+        HandleMessageText(message);
         chatPanel.SetChatEntry("");
     }
     
@@ -81,7 +99,7 @@ public class ClientInChatState : FsmState<Client>,
         agent.connectionToServer.Close();
     }
 
-    private void SendMessage(string message)
+    private void HandleMessageText(string message)
     {
         Connection connection = agent.connectionToServer;
 
@@ -93,5 +111,10 @@ public class ClientInChatState : FsmState<Client>,
         {
             connection.Send(new NewChatMessageClientToServer(message));
         }
+    }
+
+    private static string FormatServerMessage(string message)
+    {
+        return $"<color=green>{message}</color>";
     }
 }

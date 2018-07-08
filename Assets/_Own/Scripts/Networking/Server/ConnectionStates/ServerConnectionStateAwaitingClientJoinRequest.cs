@@ -16,16 +16,12 @@ public class ServerConnectionStateAwaitingClientJoinRequest : FsmState<ServerSid
             return;
         }
         
-        // TODO check if request.nickName is valid. If not, send a reject and close the connection. 
-        // TODO ? Have a state to do the disconnecting.
-
-        server.state.AddNickname(request.nickname);
-        agent.clientNickname = request.nickname;
-
         agent.connection.Send(JoinChatResponse.Accept);
         agent.connection.Send(MakeCurrentTableStateMessage());
+        server.state.AddNickname(request.nickname);
         agent.connection.Send(MakeGreeting());
         
+        agent.clientNickname = request.nickname;
         agent.fsm.ChangeState<ServerConnectionStateClientInChat>();
     }
 
@@ -39,13 +35,13 @@ public class ServerConnectionStateAwaitingClientJoinRequest : FsmState<ServerSid
         };
     }
 
-    private NewChatMessageServerToClient MakeGreeting()
+    private NewChatEntryMessage MakeGreeting()
     {
         const string WelcomeMessage =
             "\n" +
             "Welcome to the server! \n" +
             "Type `\\help` to get help.";
 
-        return NewChatMessageServerToClient.MakeWithTimestamp(WelcomeMessage, NewChatMessageServerToClient.Kind.ServerMessage); 
+        return NewChatEntryMessage.MakeWithTimestamp(WelcomeMessage, NewChatEntryMessage.Kind.ServerMessage); 
     }
 }

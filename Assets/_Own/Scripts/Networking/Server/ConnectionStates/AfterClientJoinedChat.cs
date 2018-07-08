@@ -19,15 +19,12 @@ public class AfterClientJoinedChat : FsmState<ServerSideConnectionHandler>,
         if (eventData.originConnection != agent.connection) return;
         
         Assert.IsNotNull(agent.clientNickname);
-        var message = new NewChatMessageServerToClient
-        {
-            timestamp = DateTime.Now,
-            nickname = agent.clientNickname,
-            message = eventData.message
-        };
+        
+        string chatMessage = $"{DateTime.Now.ToString("HH:mm:ss")} {agent.clientNickname}: {eventData.message}";
+        var message = new NewChatMessageServerToClient(chatMessage);
 
         var server = Server.Instance;
-        server.state.AddLine(message.GetChatLine());
+        server.state.AddLine(chatMessage);
         server.SendAllClients(message);
     }
 }

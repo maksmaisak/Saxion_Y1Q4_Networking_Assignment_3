@@ -49,7 +49,7 @@ public class ClientInChatState : FsmState<Client>,
     {
         Assert.IsTrue(isEntered);
         
-        chatPanel.AddChatLine(eventData.GetChatLine());
+        chatPanel.AddChatLine(eventData.message);
     }
 
     private void OnClickButtonSend()

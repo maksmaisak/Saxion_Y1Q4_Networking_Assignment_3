@@ -17,7 +17,7 @@ public class ServerSideConnectionHandler : MonoBehaviour, IAgent, IEventReceiver
         connection = GetComponent<Connection>();
         Assert.IsNotNull(connection);
         
-        fsm.ChangeState<AwaitingClientHandshake>();
+        fsm.ChangeState<ServerConnectionStateAwaitingClientHandshake>();
     }
 
     void FixedUpdate()

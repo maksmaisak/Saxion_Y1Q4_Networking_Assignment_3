@@ -48,8 +48,18 @@ public class ClientInChatState : FsmState<Client>,
     public void On(NewChatMessageServerToClient eventData)
     {
         Assert.IsTrue(isEntered);
-        
-        chatPanel.AddChatLine(eventData.message);
+
+        var message = eventData.message;
+        switch (eventData.kind)
+        {
+            case NewChatMessageServerToClient.Kind.CommandResponse:
+                message = $"<color=green>{message}</color>";
+                break;
+            default:
+                break;
+        }
+
+        chatPanel.AddChatLine(message);
     }
 
     private void OnClickButtonSend()
@@ -59,8 +69,7 @@ public class ClientInChatState : FsmState<Client>,
         string message = chatPanel.GetChatEntry();
         if (string.IsNullOrEmpty(message)) return;
 
-        agent.connectionToServer.Send(new NewChatMessageClientToServer(message));
-        
+        SendMessage(message);
         chatPanel.SetChatEntry("");
     }
     
@@ -70,5 +79,19 @@ public class ClientInChatState : FsmState<Client>,
         
         agent.connectionToServer.Send(new DisconnectMessage());
         agent.connectionToServer.Close();
+    }
+
+    private void SendMessage(string message)
+    {
+        Connection connection = agent.connectionToServer;
+
+        if (message.Trim() == "\\help")
+        {
+            connection.Send(new HelpRequest());
+        }
+        else
+        {
+            connection.Send(new NewChatMessageClientToServer(message));
+        }
     }
 }

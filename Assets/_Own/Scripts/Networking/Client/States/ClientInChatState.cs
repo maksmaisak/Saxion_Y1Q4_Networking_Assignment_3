@@ -52,7 +52,7 @@ public class ClientInChatState : FsmState<Client>,
         var message = eventData.message;
         switch (eventData.kind)
         {
-            case NewChatMessageServerToClient.Kind.CommandResponse:
+            case NewChatMessageServerToClient.Kind.ServerMessage:
                 message = $"<color=green>{message}</color>";
                 break;
             default:

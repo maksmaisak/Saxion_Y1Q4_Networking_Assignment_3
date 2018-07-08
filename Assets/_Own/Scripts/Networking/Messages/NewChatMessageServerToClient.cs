@@ -7,11 +7,16 @@ public class NewChatMessageServerToClient : NetworkMessage<NewChatMessageServerT
     {
         Message,
         Whisper,
-        CommandResponse
+        ServerMessage
     }
 
     public Kind kind = Kind.Message;
     public string message;
+    
+    public static NewChatMessageServerToClient MakeWithTimestamp(string message, Kind kind = Kind.Message)
+    {
+        return new NewChatMessageServerToClient($"{GetTimestampNow()} {message}", kind);
+    }
 
     public NewChatMessageServerToClient() {}
 
@@ -28,5 +33,10 @@ public class NewChatMessageServerToClient : NetworkMessage<NewChatMessageServerT
         kind = (Kind)value;
         
         s.Serialize(ref message);
+    }
+    
+    private static string GetTimestampNow()
+    {
+        return DateTime.Now.ToString("HH:mm:ss");
     }
 }

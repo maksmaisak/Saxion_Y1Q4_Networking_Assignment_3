@@ -1,8 +1,9 @@
-﻿
+﻿using System;
+
 public class NewChatMessageClientToServer : NetworkMessage<NewChatMessageClientToServer>
 {
     public string message;
-    
+
     public NewChatMessageClientToServer() {}
 
     public NewChatMessageClientToServer(string message)

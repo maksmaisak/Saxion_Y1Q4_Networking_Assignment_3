@@ -46,6 +46,6 @@ public class ServerConnectionStateAwaitingClientJoinRequest : FsmState<ServerSid
             "Welcome to the server! \n" +
             "Type `\\help` to get help.";
 
-        return new NewChatMessageServerToClient(WelcomeMessage, NewChatMessageServerToClient.Kind.CommandResponse); 
+        return NewChatMessageServerToClient.MakeWithTimestamp(WelcomeMessage, NewChatMessageServerToClient.Kind.ServerMessage); 
     }
 }

@@ -40,8 +40,7 @@ public class ServerConnectionStateClientInChat : FsmState<ServerSideConnectionHa
 
         string chatMessage = $"{GetTimestampNow()} {HelpResponseMessage}";
 
-        var message =
-            new NewChatMessageServerToClient(chatMessage, NewChatMessageServerToClient.Kind.CommandResponse);
+        var message = NewChatMessageServerToClient.MakeWithTimestamp(chatMessage, NewChatMessageServerToClient.Kind.ServerMessage);
         eventData.originConnection.Send(message);
     }
 

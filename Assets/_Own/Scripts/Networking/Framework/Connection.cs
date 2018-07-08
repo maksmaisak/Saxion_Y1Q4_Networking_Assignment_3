@@ -107,11 +107,6 @@ public class Connection : MonoBehaviour
                 Close();
             }
         }
-
-        if (state != State.Closed)
-        {
-            client.Client.Shutdown(SocketShutdown.Receive);
-        }
     }
 
     private void SendingThread()
@@ -131,8 +126,7 @@ public class Connection : MonoBehaviour
         {
             SendAllMessagesInQueue();
         }
-                
-        client.Client.Shutdown(SocketShutdown.Send);
+
         CloseClient();
     }
 
@@ -140,7 +134,7 @@ public class Connection : MonoBehaviour
     {
         if (state != State.Running && state != State.Closing) return;
         
-        lock (networkStream)
+        lock (client)
         {
             client.Close();
             networkStream.Close();

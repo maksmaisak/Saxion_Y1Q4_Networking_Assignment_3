@@ -23,12 +23,18 @@ public class AwaitingClientJoinRequest : FsmState<ServerSideConnectionHandler>,
         agent.clientNickname = request.nickname;
 
         agent.connection.Send(JoinChatResponse.Accept);
-        agent.connection.Send(new TableStateMessage
-        {
-            nicknames = server.state.GetNicknames().ToArray(), 
-            lines = server.state.GetLines().ToArray()
-        });
+        agent.connection.Send(MakeCurrentTableStateMessage());
         
         agent.fsm.ChangeState<AfterClientJoinedChat>();
+    }
+
+    private TableStateMessage MakeCurrentTableStateMessage()
+    {
+        ChatboxState state = Server.Instance.state;
+        return new TableStateMessage
+        {
+            nicknames = state.GetNicknames().ToArray(),
+            lines = state.GetLines().ToArray()
+        };
     }
 }

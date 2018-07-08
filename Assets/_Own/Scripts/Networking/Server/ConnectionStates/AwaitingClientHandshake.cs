@@ -42,7 +42,7 @@ public class AwaitingClientHandshake : FsmState<ServerSideConnectionHandler>,
 
     private void KickClient()
     {
+        agent.connection.Send(new DisconnectMessage());
         agent.connection.Close();
-        Destroy(agent.gameObject);
     }
 }

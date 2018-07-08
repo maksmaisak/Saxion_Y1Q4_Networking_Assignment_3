@@ -13,7 +13,7 @@ public class Connection : MonoBehaviour
     {
         NotStarted,
         Running,
-        Closing,
+        Closing, // Close requested, but still some messages in the queue need to be pushed into the network stream.
         Closed
     }
     
@@ -58,16 +58,17 @@ public class Connection : MonoBehaviour
 
     public void Close()
     {
-        Assert.AreNotEqual(State.Closed, state, this + "is already closed.");
+        if (state == State.Closed) return;
+        
+        //Assert.AreNotEqual(State.Closed, state, "Connection is already closed.");
         
         // TODO Push all messages in queue before actually closing the stream. 
-        state = State.Closed;
+        state = State.Closing;
     }
     
     void OnDestroy()
     {
         CloseClient();
-        state = State.Closed;
     }
     
     void FixedUpdate()
@@ -78,7 +79,7 @@ public class Connection : MonoBehaviour
             didReceiveSinceLastUpdate = false;
         }
 
-        INetworkMessage message = null;
+        INetworkMessage message;
         while (messagesToProcess.TryDequeue(out message))
         {
             OnMessageReceived?.Invoke(this, message);
@@ -103,40 +104,34 @@ public class Connection : MonoBehaviour
             catch (Exception ex)
             {
                 Debug.Log("Exception while deserializing a network message: " + ex);
-                break;
+                Close();
             }
         }
-        
-        client.Client.Shutdown(SocketShutdown.Receive);
+
+        if (state != State.Closed)
+        {
+            client.Client.Shutdown(SocketShutdown.Receive);
+        }
     }
 
     private void SendingThread()
     {
         while (state == State.Running)
         {
-            while (messagesToSend.IsEmpty)
+            // TODO Use something better than a spinner like this.
+            while (state == State.Running && messagesToSend.IsEmpty)
             {
                 Thread.Sleep(10);
-            } // TODO Use something better than a spinner like this.
-            
-            INetworkMessage message;
-            while (messagesToSend.TryDequeue(out message))
-            {
-                Assert.IsNotNull(message);
-                Debug.Log("Sending " + message);
-
-                try
-                {
-                    NetworkMessageSerializer.Serialize(message, networkStream);
-                }
-                catch (Exception ex)
-                {
-                    Debug.Log("Exception while serializing a network message: " + ex);
-                    break;
-                }
             }
+
+            SendAllMessagesInQueue();
         }
-        
+
+        if (state == State.Closing)
+        {
+            SendAllMessagesInQueue();
+        }
+                
         client.Client.Shutdown(SocketShutdown.Send);
         CloseClient();
     }
@@ -152,5 +147,26 @@ public class Connection : MonoBehaviour
         }
 
         state = State.Closed;
+    }
+
+    private void SendAllMessagesInQueue()
+    {
+        INetworkMessage message;
+        while (messagesToSend.TryDequeue(out message))
+        {
+            Assert.IsNotNull(message);
+            Debug.Log("Sending " + message);
+
+            try
+            {
+                NetworkMessageSerializer.Serialize(message, networkStream);
+            }
+            catch (Exception ex)
+            {
+                Debug.Log("Exception while serializing a network message: " + ex);
+                Close();
+                break;
+            }
+        }   
     }
 }

@@ -32,7 +32,7 @@ public class MainChatPanel : BasePanel {
 
     public void AddUser(string pUserName)
     {
-       UserButton user = Instantiate<UserButton>(_userButtonPrefab);
+       UserButton user = Instantiate(_userButtonPrefab);
        user.onClick.AddListener(() => buttonClicked(pUserName));
        user.SetName(pUserName);
        user.transform.SetParent(_userParent.transform,false);
@@ -50,6 +50,8 @@ public class MainChatPanel : BasePanel {
             button.onClick.RemoveAllListeners();
             Destroy(button.gameObject);
         }
+        
+        _userButtonMap.Clear();
     }
 
     public void RemoveUser(string pUserName)

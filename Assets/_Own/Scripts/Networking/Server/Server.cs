@@ -57,7 +57,7 @@ public class Server : Singleton<Server>
     
     public void SendAllClients(INetworkMessage message)
     {
-        var toRemove = connections.Where(c => !c || c == null || c.state == Connection.State.Closed);
+        var toRemove = connections.Where(c => !c || c.state == Connection.State.Closed).ToArray();
         foreach (Connection connection in toRemove)
         {
             connections.Remove(connection);

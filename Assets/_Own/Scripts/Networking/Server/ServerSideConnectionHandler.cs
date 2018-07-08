@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -21,10 +22,14 @@ public class ServerSideConnectionHandler : MonoBehaviour, IAgent, IEventReceiver
 
     void FixedUpdate()
     {
-        if (connection.state == Connection.State.Closed)
+        if (connection.state != Connection.State.Closed) return;
+        
+        if (clientNickname != null)
         {
-            Destroy(gameObject);
+            Server.Instance.state.RemoveNickname(clientNickname);
         }
+
+        Destroy(gameObject);
     }
     
     public void On(DisconnectMessage eventData)

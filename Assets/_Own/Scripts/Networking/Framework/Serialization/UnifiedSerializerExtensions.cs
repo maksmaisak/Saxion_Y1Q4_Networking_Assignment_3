@@ -17,6 +17,20 @@ public static class UnifiedSerializerExtensions
         s.Serialize(ref value.x);
         s.Serialize(ref value.y);
     }
+    
+    public static void Serialize(this IUnifiedSerializer s, ref Vector2Int value)
+    {
+        int x = value.x;
+        int y = value.y;
+        s.Serialize(ref x);
+        s.Serialize(ref y);
+        
+        if (s.isReading)
+        {
+            value.x = x;
+            value.y = y;
+        }
+    }
 
     public static void Serialize(this IUnifiedSerializer s, ref Quaternion value)
     {

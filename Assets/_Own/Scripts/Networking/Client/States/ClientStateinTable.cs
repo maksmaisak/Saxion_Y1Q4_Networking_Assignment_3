@@ -5,8 +5,8 @@ using UnityEngine.Assertions;
 public class ClientStateinTable : FsmState<Client>,
     IEventReceiver<NewChatEntryMessage>,
     IEventReceiver<TableStateMessage>,
-    IEventReceiver<UserJoinedMessage>,
-    IEventReceiver<UserLeftMessage>
+    IEventReceiver<NotifyPlayerJoinedTable>,
+    IEventReceiver<NotifyPlayerLeftTable>
 {
     [SerializeField] MainChatPanel chatPanel;
     
@@ -66,14 +66,14 @@ public class ClientStateinTable : FsmState<Client>,
         chatPanel.AddChatLine(message);
     }
     
-    public void On(UserJoinedMessage request)
+    public void On(NotifyPlayerJoinedTable request)
     {
         Assert.IsTrue(isEntered);
 
         chatPanel.AddUser(request.nickname);
     }
 
-    public void On(UserLeftMessage request)
+    public void On(NotifyPlayerLeftTable request)
     {
         Assert.IsTrue(isEntered);
         

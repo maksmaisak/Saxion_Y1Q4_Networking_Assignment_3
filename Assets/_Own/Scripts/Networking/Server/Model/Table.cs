@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class Table : MyBehaviour
+public class Table : MyBehaviour,
+    IEventReceiver<MakeMove>
 {
     private ServerPlayer playerA;
     private ServerPlayer playerB;
@@ -31,7 +32,7 @@ public class Table : MyBehaviour
         newPlayer.connection.Send(MakeTableStateMessage());
         newPlayer.connection.Send(MakeChatGreeting());
 
-        if (other) other.connection.Send(new UserJoinedMessage(newPlayer.nickname));
+        if (other) other.connection.Send(new NotifyPlayerJoinedTable(newPlayer.playerId, newPlayer.nickname));
     }
 
     public void SendAll(INetworkMessage message)
@@ -54,16 +55,13 @@ public class Table : MyBehaviour
 
         return NewChatEntryMessage.MakeWithTimestamp(WelcomeMessage, NewChatEntryMessage.Kind.ServerMessage); 
     }
-}
 
-public class Checkerboard
-{
-    public enum TileState
+    public void On(MakeMove request)
     {
-        None,
-        Black,
-        White
-    }
+        if (!isFull) return;
+        var connection = request.originConnection;
+        if (connection != playerA.connection && connection != playerB.connection) return;
 
-    public TileState[,] tileStates;
+        if (!checkerboard.IsValidMove(request.origin, request.destination));
+    }
 }

@@ -9,7 +9,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <ProjectGuid>{03B9DAA7-B2A1-B8D8-D584-06FC2A0D882F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -86,6 +87,10 @@
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\UnifiedSerializerExtensions.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\DisconnectMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\HelpRequest.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\MakeMove.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyGameStart.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyPlayerJoinedTable.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyPlayerLeftTable.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\NewChatEntryMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\NewChatMessageClientToServer.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\PreJoin\JoinServerRequest.cs" />
@@ -93,12 +98,10 @@
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\PreJoin\JoinTableRequest.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\PreJoin\JoinTableResponse.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\TableStateMessage.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Messages\UserJoinedMessage.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Messages\UserLeftMessage.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Server\ChatboxState.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Server\ConnectionStates\ServerConnectionStateAwaitingServerJoinRequest.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Server\ConnectionStates\ServerConnectionStateClientInLobby.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Server\ConnectionStates\ServerConnectionStateClientInTable.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Server\Model\Checkerboard.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Server\Model\Table.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Server\Server.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Server\ServerPlayer.cs" />

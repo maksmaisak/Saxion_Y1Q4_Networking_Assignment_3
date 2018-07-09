@@ -2,59 +2,65 @@
 using System.Collections;
 using UnityEngine.UI;
 using System;
+using System.Net;
 using UnityEngine.Events;
 
-public class ConnectPanel : BasePanel {
+public class ConnectPanel : BasePanel
+{
+    [SerializeField] private Button buttonConnect;
+    [SerializeField] private Text   statusBar;
+    [SerializeField] private InputField entryServer;
+    [SerializeField] private InputField entryPort;
+    [SerializeField] private InputField entryNickname;
 
-    [SerializeField]
-    private Button _buttonConnect;
-
-    [SerializeField]
-    private Text _statusBar;
-
-    [SerializeField]
-    private InputField _entryServer;
-
-    [SerializeField]
-    private InputField _entryPort;
-
-    public string GetServerName() {
-		return _entryServer.text;
-	}
-
-	public int GetPort() {
-		return int.Parse (_entryPort.text);
-	}
-
-	public bool Validate() {
-		try {
-			int.Parse (_entryPort.text);
-		} catch {
-            _statusBar.text = "Please enter a valid port";
-			return false;
-		}
-
-		if (_entryServer.text.Trim().Length == 0) {
-            _statusBar.text = "Please enter a server";
-			return false;
-		}
-
-		return true;
-	}
-
-    public void RegisterButtonConnectClickAction (UnityAction pAction)
+    public string GetNickname()
     {
-        _buttonConnect.onClick.AddListener(pAction);
+        return entryNickname.text;
     }
 
-    public void UnregisterButtonConnectClickActions ()
+    public string GetServerName()
     {
-        _buttonConnect.onClick.RemoveAllListeners();
+        return entryServer.text;
+    }
+
+    public int GetPort()
+    {
+        return int.Parse(entryPort.text);
+    }
+
+    public bool Validate()
+    {
+        try
+        {
+            int.Parse(entryPort.text);
+        }
+        catch
+        {
+            statusBar.text = "Please enter a valid port";
+            return false;
+        }
+
+        if (entryServer.text.Trim().Length == 0)
+        {
+            statusBar.text = "Please enter the IP-address of a server";
+            return false;
+        }
+
+        return true;
+    }
+
+    public void RegisterButtonConnectClickAction(UnityAction pAction)
+    {
+        buttonConnect.onClick.AddListener(pAction);
+    }
+
+    public void UnregisterButtonConnectClickActions()
+    {
+        buttonConnect.onClick.RemoveAllListeners();
     }
 
     public void SetStatusbarText(string pInfo)
     {
-        _statusBar.text = pInfo;
+        statusBar.text = pInfo;
     }
-
 }

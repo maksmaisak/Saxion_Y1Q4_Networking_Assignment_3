@@ -17,8 +17,8 @@ public class ChatboxState
     {        
         if (!nicknames.Add(nickname)) return false;
         
-        Server.Instance.SendAllClients(new UserJoinedMessage(nickname));
-        Server.Instance.SendAllClients(NewChatEntryMessage.MakeWithTimestamp($"{nickname} has joined the chat.", NewChatEntryMessage.Kind.ServerMessage));
+        Server.Instance.SendAllConnectedPlayers(new UserJoinedMessage(nickname));
+        Server.Instance.SendAllConnectedPlayers(NewChatEntryMessage.MakeWithTimestamp($"{nickname} has joined the chat.", NewChatEntryMessage.Kind.ServerMessage));
         return true;
     }
 
@@ -26,8 +26,8 @@ public class ChatboxState
     {
         if (!nicknames.Remove(nickname)) return false;
         
-        Server.Instance.SendAllClients(new UserLeftMessage(nickname));
-        Server.Instance.SendAllClients(NewChatEntryMessage.MakeWithTimestamp($"{nickname} has left the chat.", NewChatEntryMessage.Kind.ServerMessage));
+        Server.Instance.SendAllConnectedPlayers(new UserLeftMessage(nickname));
+        Server.Instance.SendAllConnectedPlayers(NewChatEntryMessage.MakeWithTimestamp($"{nickname} has left the chat.", NewChatEntryMessage.Kind.ServerMessage));
         return true;
     }
 

@@ -216,6 +216,8 @@ MonoBehaviour:
   portNumber: 55555
   connectionPrefab: {fileID: 114547075691384926, guid: 069f8d0ce56cf4422ae9da51f5bbfec7,
     type: 2}
+  tablePrefab: {fileID: 114890090091521010, guid: 42622a89dd8a548a880a8d24c4c66d85,
+    type: 2}
 --- !u!4 &919875749
 Transform:
   m_ObjectHideFlags: 0

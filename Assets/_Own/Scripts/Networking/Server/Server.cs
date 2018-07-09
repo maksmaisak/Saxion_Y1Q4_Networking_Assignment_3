@@ -13,21 +13,24 @@ public class Server : Singleton<Server>
 {
     [SerializeField] int portNumber = 55555;
     [SerializeField] Connection connectionPrefab;
-    
-    public ChatboxState state { get; private set; }
-    
+    [SerializeField] Table tablePrefab;
+        
     private readonly ConcurrentQueue<TcpClient> pendingConnectedTcpClients = new ConcurrentQueue<TcpClient>();
-    // TODO Remove closed connections frome here.
-    private readonly LinkedList<Connection> connections = new LinkedList<Connection>();
+    public readonly HashSet<ServerPlayer> joinedPlayers = new HashSet<ServerPlayer>();
 
+    public Table table { get; private set; }
+    
     private Thread listeningThread;
+
+    private uint nextPlayerId;
     
     void Start()
     {
         Assert.IsNotNull(connectionPrefab);
-        
-        state = new ChatboxState();
+        Assert.IsNotNull(tablePrefab);
 
+        table = Instantiate(tablePrefab, transform);
+        
         listeningThread = new Thread(Listen) {IsBackground = true};
         listeningThread.Start();
     }
@@ -47,25 +50,22 @@ public class Server : Singleton<Server>
             
             Connection connection = Instantiate(connectionPrefab, transform);
             connection.gameObject.name = $"ServerSideConnection ({client.Client.RemoteEndPoint})";
-
             connection.Initialize(client);
 
-            connections.AddLast(connection);
             new NewConnection(connection).PostEvent();
         }
     }
     
-    public void SendAllClients(INetworkMessage message)
+    public uint GetNextPlayerId()
     {
-        var toRemove = connections.Where(c => !c || c.state == Connection.State.Closed).ToArray();
-        foreach (Connection connection in toRemove)
+        return nextPlayerId++;
+    }
+    
+    public void SendAllConnectedPlayers(INetworkMessage message)
+    {
+        foreach (ServerPlayer player in joinedPlayers)
         {
-            connections.Remove(connection);
-        }
-
-        foreach (Connection connection in connections)
-        {
-            connection.Send(message);
+            player.connection.Send(message);
         }
     }
 

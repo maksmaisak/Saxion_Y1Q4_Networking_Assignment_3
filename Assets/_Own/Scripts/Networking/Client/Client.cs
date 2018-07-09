@@ -12,7 +12,7 @@ public class Client : Singleton<Client>, IAgent, IEventReceiver<DisconnectMessag
     void Start()
     {
         fsm = new FiniteStateMachine<Client>(this);
-        fsm.ChangeState<ClientNotConnectedState>();
+        fsm.ChangeState<ClientStateNotConnected>();
     }
 
     void Update()
@@ -20,7 +20,7 @@ public class Client : Singleton<Client>, IAgent, IEventReceiver<DisconnectMessag
         if (connectionToServer && connectionToServer.state == Connection.State.Closed)
         {
             Destroy(connectionToServer.gameObject);
-            fsm.ChangeState<ClientNotConnectedState>();
+            fsm.ChangeState<ClientStateNotConnected>();
         }
     }
 
@@ -31,7 +31,7 @@ public class Client : Singleton<Client>, IAgent, IEventReceiver<DisconnectMessag
         connectionToServer = connection;
     }
 
-    public void On(DisconnectMessage eventData)
+    public void On(DisconnectMessage request)
     {
         connectionToServer.Close();
     }

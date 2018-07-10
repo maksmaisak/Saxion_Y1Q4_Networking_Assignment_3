@@ -18,7 +18,7 @@ public class ClientStateInTable : FsmState<Client>,
         
         Assert.IsNotNull(chatPanel);
 
-        boardView.enabled = true;
+        boardView.gameObject.SetActive(true);
 
         chatPanel.EnableGUI();
         chatPanel.ClearAllText();
@@ -32,7 +32,7 @@ public class ClientStateInTable : FsmState<Client>,
         base.Exit();
 
         boardView.Clear();
-        boardView.enabled = false;
+        boardView.gameObject.SetActive(false);
         
         chatPanel.DisableGUI();
         chatPanel.UnregisterButtonSendClickActions();

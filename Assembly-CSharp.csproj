@@ -113,8 +113,8 @@
     <Compile Include="Assets\_Own\Visuals\BoardTile.cs" />
     <Compile Include="Assets\_Own\Visuals\BoardView.cs" />
     <Compile Include="Assets\_Own\Visuals\ColorOverlay.cs" />
-    <Compile Include="Assets\_Own\Visuals\MainGamePanel.cs" />
     <Compile Include="Assets\_Own\Visuals\PieceView.cs" />
+    <Compile Include="Assets\_Own\Visuals\TestBoardPlayer.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Examples\Basics.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Examples\Sequences.cs" />
     <Compile Include="Assets\PostProcessing\Runtime\Attributes\GetSetAttribute.cs" />

@@ -43,8 +43,7 @@ public class Checkerboard : IUnifiedSerializable
         tiles = (TileState[,])checkerboard.tiles.Clone();
     }
     
-    /// Returns false if the move is invalid.
-    public bool TryMakeMove(Vector2Int origin, Vector2Int target)
+    public bool IsValidMove(Vector2Int origin, Vector2Int target)
     {
         if (IsOutOfBounds(origin)) return false;
         if (IsOutOfBounds(target)) return false;
@@ -60,17 +59,32 @@ public class Checkerboard : IUnifiedSerializable
         if (absDelta.x == 0) return false; // No move
         if (absDelta.x >  2) return false; // Too long
 
-        if (absDelta.x == 1) // No capture
+        if (absDelta.x == 2)
+        {
+            return GetAt(origin + direction) == GetOppositePlayer(currentPlayer); // Can't capture
+        }
+
+        return true;
+    }
+    
+    /// Returns false if the move is invalid.
+    public bool TryMakeMove(Vector2Int origin, Vector2Int target)
+    {
+        if (!IsValidMove(origin, target)) return false;
+
+        Vector2Int delta = target - origin;
+        int step = Abs(delta.x);
+        
+        if (step == 1) // No capture
         {
             Transport(origin, target);
         }
         else // Capture
         {
-            Vector2Int capturedPosition = origin + direction;
-            if (absDelta.x > 1 && GetAt(capturedPosition) != GetOppositePlayer(currentPlayer)) return false;
-
             Transport(origin, target);
-            RemoveAt(capturedPosition);
+            
+            Vector2Int direction = new Vector2Int(Math.Sign(delta.x), Math.Sign(delta.y));
+            RemoveAt(origin + direction);
         }
 
         currentPlayer = GetOppositePlayer(currentPlayer);
@@ -107,14 +121,15 @@ public class Checkerboard : IUnifiedSerializable
         foreach (Vector2Int delta in deltas)
         {
             Vector2Int adjacentPos = origin + delta;
-            Vector2Int capturePos = adjacentPos + delta;
-            if (!IsOutOfBounds(adjacentPos) && GetAt(adjacentPos) == TileState.None)
+            Vector2Int afterCapturePos = adjacentPos + delta;
+
+            if (IsValidMove(origin, adjacentPos))
             {
                 targets.Add(adjacentPos);
             }
-            else if (!IsOutOfBounds(capturePos) && GetAt(adjacentPos) == GetOppositePlayer(currentPlayer))
+            else if (IsValidMove(origin, afterCapturePos))
             {
-                targets.Add(capturePos);
+                targets.Add(afterCapturePos);
             }
         }
 

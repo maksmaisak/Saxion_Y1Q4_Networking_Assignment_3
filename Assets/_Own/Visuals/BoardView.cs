@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,7 +18,7 @@ public class BoardView : MonoBehaviour
     [SerializeField] ColorOverlay overlayPrefab;
     [SerializeField] Transform overlaysParent;
 
-    public delegate void OnMoveRequestHandler(Vector2Int originPosition, Vector2Int destinationPosition);
+    public delegate void OnMoveRequestHandler(BoardView sender, Vector2Int origin, Vector2Int target);
     public event OnMoveRequestHandler OnMoveRequest;
     
     private Checkerboard checkerboard;
@@ -32,13 +33,6 @@ public class BoardView : MonoBehaviour
         public PieceView pieceView;
     }
     
-    void Start()
-    {
-        // Testing:
-        
-        SetCheckerboard(CheckersHelper.MakeDefaultCheckerboard());
-    }
-    
     public void SetCheckerboard(Checkerboard newCheckerboard)
     {
         Assert.IsNotNull(newCheckerboard);
@@ -47,20 +41,27 @@ public class BoardView : MonoBehaviour
         checkerboard = newCheckerboard;
 
         InitializeGrid();
+        checkerboard.OnPieceAdded   += CheckerboardOnPieceAdded;
         checkerboard.OnPieceMoved   += CheckerboardOnPieceMoved;
         checkerboard.OnPieceRemoved += CheckerboardOnPieceRemoved;
     }
     
     public void Clear()
     {
+        checkerboard.OnPieceAdded   -= CheckerboardOnPieceAdded;
         checkerboard.OnPieceMoved   -= CheckerboardOnPieceMoved;
         checkerboard.OnPieceRemoved -= CheckerboardOnPieceRemoved;
         checkerboard = null;
-        
-        throw new NotImplementedException();
-        // TODO Remove existing pieces, tiles, and overlays.
-    }
 
+        foreach (GridCell cell in grid)
+        {
+            if (cell.tile) Destroy(cell.tile);
+            if (cell.overlay) Destroy(cell.overlay);
+            if (cell.pieceView) Destroy(cell.pieceView);
+        }
+        grid = null;
+    }
+    
     private void InitializeGrid()
     {
         Assert.IsNotNull(checkerboard);
@@ -94,7 +95,8 @@ public class BoardView : MonoBehaviour
         Assert.IsNotNull(prefab);
 
         BoardTile tile = Instantiate(prefab, tilesParent);
-        tile.transform.localPosition = GetLocalPositionForTileAt(gridPosition);
+        tile.transform.localPosition = TilespaceToLocalspace(gridPosition);
+        tile.OnClick += (sender) => OnClickTileView(sender, gridPosition);
         return tile;
     }
 
@@ -103,7 +105,8 @@ public class BoardView : MonoBehaviour
         Assert.IsNotNull(overlayPrefab); 
         
         ColorOverlay overlay = Instantiate(overlayPrefab, overlaysParent);
-        overlay.transform.localPosition = GetLocalPositionForTileAt(gridPosition);
+        overlay.transform.localPosition = TilespaceToLocalspace(gridPosition);
+        
         return overlay;
     }
 
@@ -113,13 +116,14 @@ public class BoardView : MonoBehaviour
         Assert.IsNotNull(prefab);
         
         PieceView piece = Instantiate(prefab, piecesParent);
-        piece.transform.localPosition = GetLocalPositionForTileAt(gridPosition);
-        piece.OnClick += (sender) => PieceViewOnClick(sender, gridPosition);
+        piece.transform.localPosition = TilespaceToLocalspace(gridPosition);
+        piece.gridPosition = gridPosition;
+        piece.OnClick += (sender) => PieceViewOnClick(sender, sender.gridPosition);
         
         return piece;
     }
     
-    private Vector3 GetLocalPositionForTileAt(Vector2Int gridPosition)
+    private Vector3 TilespaceToLocalspace(Vector2Int gridPosition)
     {
         Vector2 tileSize = new Vector2(1f, 1f);
         
@@ -132,8 +136,6 @@ public class BoardView : MonoBehaviour
 
     private void PieceViewOnClick(PieceView sender, Vector2Int gridPosition)
     {
-        GridCell gridCell = grid[gridPosition.x, gridPosition.y];
-
         if (checkerboard.GetAt(gridPosition) != checkerboard.currentPlayer) return;
         
         if (currentlySelectedPosition.HasValue)
@@ -143,30 +145,57 @@ public class BoardView : MonoBehaviour
             currentlySelectedPosition = null;
         }
 
-        gridCell.overlay.SetActive(true);
+        grid[gridPosition.x, gridPosition.y].overlay.SetActive(true);
+        currentlySelectedPosition = gridPosition;
+
         foreach (Vector2Int position in checkerboard.GetValidMoveDestinations(gridPosition))
         {
             grid[position.x, position.y].overlay.SetActive(true);
         }
-        
-        currentlySelectedPosition = gridPosition;
     }
 
+    private void OnClickTileView(BoardTile sender, Vector2Int gridPosition)
+    {
+        if (!currentlySelectedPosition.HasValue) return;
+        if (currentlySelectedPosition.Value == gridPosition) return;
+        if (!checkerboard.IsValidMove(currentlySelectedPosition.Value, gridPosition)) return;
+
+        TurnOffAllOverlays();
+
+        Vector2Int origin = currentlySelectedPosition.Value;
+        Vector2Int target = gridPosition;
+        OnMoveRequest?.Invoke(this, origin, target);
+        
+        currentlySelectedPosition = null;
+    }
+
+    private void CheckerboardOnPieceAdded(Checkerboard sender, Vector2Int position)
+    {
+        grid[position.x, position.y].pieceView = AddPiece(position, sender.GetAt(position) == Checkerboard.TileState.White);
+    }
+   
+    private void CheckerboardOnPieceMoved(Checkerboard sender, Vector2Int origin, Vector2Int target)
+    {
+        PieceView pieceView = grid[origin.x, origin.y].pieceView;
+        
+        pieceView.MoveTo(TilespaceToLocalspace(target));
+        pieceView.gridPosition = target;
+        
+        grid[target.x, target.y].pieceView = pieceView;
+        grid[origin.x, origin.y].pieceView = null;
+    }
+    
+    private void CheckerboardOnPieceRemoved(Checkerboard sender, Vector2Int position)
+    {
+        grid[position.x, position.y].pieceView.Capture();
+        grid[position.x, position.y].pieceView = null;
+    }
+    
     private void TurnOffAllOverlays()
     {
         foreach (GridCell cell in grid)
         {
             cell.overlay?.SetActive(false);
         }
-    }
-    
-    private void CheckerboardOnPieceMoved(Checkerboard sender, Vector2Int origin, Vector2Int target)
-    {
-        throw new System.NotImplementedException();
-    }
-    
-    private void CheckerboardOnPieceRemoved(Checkerboard sender, Vector2Int position)
-    {
-        throw new System.NotImplementedException();
     }
 }

@@ -19,6 +19,7 @@ public class ClientStateInTable : FsmState<Client>,
         Assert.IsNotNull(chatPanel);
 
         boardView.gameObject.SetActive(true);
+        boardView.OnMoveRequest += OnMoveRequest;
 
         chatPanel.EnableGUI();
         chatPanel.ClearAllText();
@@ -79,9 +80,11 @@ public class ClientStateInTable : FsmState<Client>,
     public void On(NotifyGameStart request)
     {
         throw new NotImplementedException();
+        
+        // TODO enable controls on the BoardView
     }
 
-    private void OnPlayerMadeMoveRequest(Vector2Int origin, Vector2Int target)
+    private void OnMoveRequest(BoardView sender, Vector2Int origin, Vector2Int target)
     {
         agent.connectionToServer.Send(new MakeMove(origin, target));
     }

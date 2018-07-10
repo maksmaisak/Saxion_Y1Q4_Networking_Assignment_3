@@ -134,6 +134,7 @@ public class Connection : MonoBehaviour
     {
         if (state != State.Running && state != State.Closing) return;
         
+        // TODO use lock when reading/writing with the networkStream on receiving/sending threads.
         lock (client)
         {
             client.Close();

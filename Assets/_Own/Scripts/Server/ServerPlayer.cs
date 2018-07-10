@@ -26,8 +26,9 @@ public class ServerPlayer : MyBehaviour, IAgent,
     protected override void OnDestroy()
     {
         base.OnDestroy();
-        
-        Server.Instance.joinedPlayers.Remove(this);
+
+        var server = Server.Instance;
+        if (server) server.joinedPlayers.Remove(this);
     }
 
     void FixedUpdate()

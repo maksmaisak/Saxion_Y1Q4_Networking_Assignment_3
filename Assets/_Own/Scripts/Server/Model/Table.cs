@@ -9,7 +9,7 @@ public class Table : MyBehaviour,
     private ServerPlayer playerA;
     private ServerPlayer playerB;
     
-    private readonly Checkerboard checkerboard = new Checkerboard();
+    private readonly Checkerboard checkerboard = CheckersHelper.MakeDefaultCheckerboard();
 
     private bool isPlaying;
 

@@ -10,7 +10,7 @@ public class ClientStateInTable : FsmState<Client>,
     IEventReceiver<NotifyGameStart>
 {
     [SerializeField] MainChatPanel chatPanel;
-    [SerializeField] MainGamePanel mainGamePanel;
+    [SerializeField] BoardView boardView;
     
     public override void Enter()
     {
@@ -18,12 +18,11 @@ public class ClientStateInTable : FsmState<Client>,
         
         Assert.IsNotNull(chatPanel);
 
-        mainGamePanel.EnableGUI();
+        boardView.enabled = true;
 
         chatPanel.EnableGUI();
         chatPanel.ClearAllText();
         chatPanel.RemoveAllUsers();
-
         chatPanel.RegisterButtonSendClickAction(OnClickButtonSend);
         chatPanel.RegisterButtonDisconnectClickAction(OnClickButtonDisconnect);
     }
@@ -32,11 +31,10 @@ public class ClientStateInTable : FsmState<Client>,
     {
         base.Exit();
 
-        mainGamePanel.Clear();
-        mainGamePanel.DisableGUI();
+        boardView.Clear();
+        boardView.enabled = false;
         
         chatPanel.DisableGUI();
-
         chatPanel.UnregisterButtonSendClickActions();
         chatPanel.UnregisterButtonDisconnectClickActions();
     }
@@ -61,7 +59,7 @@ public class ClientStateInTable : FsmState<Client>,
     
     public void On(NotifyTableState message)
     {
-        mainGamePanel.SetCheckerboard(message.checkerboard);
+        boardView.SetCheckerboard(message.checkerboard);
     }
     
     public void On(NotifyPlayerJoinedTable message)
@@ -81,6 +79,11 @@ public class ClientStateInTable : FsmState<Client>,
     public void On(NotifyGameStart request)
     {
         throw new NotImplementedException();
+    }
+
+    private void OnPlayerMadeMoveRequest(Vector2Int origin, Vector2Int target)
+    {
+        agent.connectionToServer.Send(new MakeMove(origin, target));
     }
 
     private void OnClickButtonSend()

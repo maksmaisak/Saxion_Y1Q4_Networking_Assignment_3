@@ -23,7 +23,7 @@ public class Checkerboard : IUnifiedSerializable
     public delegate void PieceMoveHandler(Checkerboard sender, Vector2Int origin, Vector2Int target);
     public event PieceMoveHandler OnPieceMoved;
 
-    private TileState currentPlayer;
+    public TileState currentPlayer { get; private set; }
     
     private TileState[,] tiles;
     public Vector2Int size { get; private set; }
@@ -88,7 +88,39 @@ public class Checkerboard : IUnifiedSerializable
         Assert.IsFalse(IsOutOfBounds(new Vector2Int(x, y)));
         return tiles[x, y];
     }
+    
+    public IReadOnlyCollection<Vector2Int> GetValidMoveDestinations(Vector2Int origin)
+    {
+        Assert.IsFalse(IsOutOfBounds(origin));
+        Assert.AreEqual(currentPlayer, GetAt(origin));
 
+        Vector2Int[] deltas =
+        {
+            new Vector2Int( 1,  1),
+            new Vector2Int(-1,  1),
+            new Vector2Int(-1, -1),
+            new Vector2Int( 1, -1)
+        };
+        
+        var targets = new List<Vector2Int>();
+
+        foreach (Vector2Int delta in deltas)
+        {
+            Vector2Int adjacentPos = origin + delta;
+            Vector2Int capturePos = adjacentPos + delta;
+            if (!IsOutOfBounds(adjacentPos) && GetAt(adjacentPos) == TileState.None)
+            {
+                targets.Add(adjacentPos);
+            }
+            else if (!IsOutOfBounds(capturePos) && GetAt(adjacentPos) == GetOppositePlayer(currentPlayer))
+            {
+                targets.Add(capturePos);
+            }
+        }
+
+        return targets;
+    }
+    
     public void AddAt(Vector2Int position, TileState pieceColor)
     {
         Assert.IsFalse(IsOutOfBounds(position));
@@ -142,8 +174,8 @@ public class Checkerboard : IUnifiedSerializable
 
     private bool IsOutOfBounds(Vector2Int position)
     {
-        if (position.x < 0 || position.x > tiles.GetLength(0)) return true;
-        if (position.y < 0 || position.y > tiles.GetLength(1)) return true;
+        if (position.x < 0 || position.x >= size.x) return true;
+        if (position.y < 0 || position.y >= size.y) return true;
 
         return false;
     }

@@ -1,21 +1,37 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 public class BoardView : MonoBehaviour
 {
-    [SerializeField] GameObject blackTilePrefab;
-    [SerializeField] GameObject whiteTilePrefab;
+    [SerializeField] BoardTile blackTilePrefab;
+    [SerializeField] BoardTile whiteTilePrefab;
     [SerializeField] Transform tilesParent;
     [Space] 
-    [SerializeField] GameObject blackCheckerPiecePrefab;
-    [SerializeField] GameObject whiteCheckerPiecePrefab;
+    [SerializeField] PieceView blackCheckerPiecePrefab;
+    [SerializeField] PieceView whiteCheckerPiecePrefab;
     [SerializeField] Transform piecesParent;
+    [Space] 
+    [SerializeField] ColorOverlay overlayPrefab;
+    [SerializeField] Transform overlaysParent;
+
+    public delegate void OnMoveRequestHandler(Vector2Int originPosition, Vector2Int destinationPosition);
+    public event OnMoveRequestHandler OnMoveRequest;
     
     private Checkerboard checkerboard;
-    private GameObject[,] grid;
+    private GridCell[,] grid;
 
+    private Vector2Int? currentlySelectedPosition;
+    
+    private struct GridCell
+    {
+        public BoardTile tile;
+        public ColorOverlay overlay;
+        public PieceView pieceView;
+    }
+    
     void Start()
     {
         // Testing:
@@ -40,54 +56,69 @@ public class BoardView : MonoBehaviour
         checkerboard.OnPieceMoved   -= CheckerboardOnPieceMoved;
         checkerboard.OnPieceRemoved -= CheckerboardOnPieceRemoved;
         checkerboard = null;
+        
+        throw new NotImplementedException();
+        // TODO Remove existing pieces, tiles, and overlays.
     }
 
     private void InitializeGrid()
     {
         Assert.IsNotNull(checkerboard);
         
-        grid = new GameObject[checkerboard.size.x, checkerboard.size.y];
+        grid = new GridCell[checkerboard.size.x, checkerboard.size.y];
 
         for (int y = 0; y < checkerboard.size.y; ++y)
             for (int x = 0; x < checkerboard.size.x; ++x)
-                GenerateTile(x, y);
+                GenerateTileView(x, y);
     }
 
-    private void GenerateTile(int x, int y)
+    private void GenerateTileView(int x, int y)
     {
         var gridPosition = new Vector2Int(x, y); 
         
         Checkerboard.TileState tile = checkerboard.GetAt(gridPosition);
 
-        AddTile(gridPosition);
+        grid[x, y].tile    = AddTile(gridPosition);
+        grid[x, y].overlay = AddOverlay(gridPosition);
         
         if (tile != Checkerboard.TileState.None)
         {
-            grid[x, y] = AddPiece(gridPosition, isWhite: tile == Checkerboard.TileState.White);
+            grid[x, y].pieceView = AddPiece(gridPosition, isWhite: tile == Checkerboard.TileState.White);
         }
     }
 
-    private GameObject AddTile(Vector2Int gridPosition)
+    private BoardTile AddTile(Vector2Int gridPosition)
     {
         bool isWhite = (gridPosition.x % 2 == 0) ^ (gridPosition.y % 2 == 0);
-        GameObject prefab = isWhite ? whiteTilePrefab : blackTilePrefab;
+        BoardTile prefab = isWhite ? whiteTilePrefab : blackTilePrefab;
         Assert.IsNotNull(prefab);
 
-        GameObject tile = Instantiate(prefab, tilesParent);
+        BoardTile tile = Instantiate(prefab, tilesParent);
         tile.transform.localPosition = GetLocalPositionForTileAt(gridPosition);
         return tile;
     }
 
-    private GameObject AddPiece(Vector2Int gridPosition, bool isWhite)
+    private ColorOverlay AddOverlay(Vector2Int gridPosition)
     {
-        GameObject prefab = isWhite ? whiteCheckerPiecePrefab : blackCheckerPiecePrefab;
-        Assert.IsNotNull(prefab);
+        Assert.IsNotNull(overlayPrefab); 
         
-        GameObject piece = Instantiate(prefab, piecesParent);
-        piece.transform.localPosition = GetLocalPositionForTileAt(gridPosition); 
-        return piece;
+        ColorOverlay overlay = Instantiate(overlayPrefab, overlaysParent);
+        overlay.transform.localPosition = GetLocalPositionForTileAt(gridPosition);
+        return overlay;
     }
 
+    private PieceView AddPiece(Vector2Int gridPosition, bool isWhite)
+    {        
+        PieceView prefab = isWhite ? whiteCheckerPiecePrefab : blackCheckerPiecePrefab;
+        Assert.IsNotNull(prefab);
+        
+        PieceView piece = Instantiate(prefab, piecesParent);
+        piece.transform.localPosition = GetLocalPositionForTileAt(gridPosition);
+        piece.OnClick += (sender) => PieceViewOnClick(sender, gridPosition);
+        
+        return piece;
+    }
+    
     private Vector3 GetLocalPositionForTileAt(Vector2Int gridPosition)
     {
         Vector2 tileSize = new Vector2(1f, 1f);
@@ -99,6 +130,36 @@ public class BoardView : MonoBehaviour
         return new Vector3(position.x, 0f, position.y);
     }
 
+    private void PieceViewOnClick(PieceView sender, Vector2Int gridPosition)
+    {
+        GridCell gridCell = grid[gridPosition.x, gridPosition.y];
+
+        if (checkerboard.GetAt(gridPosition) != checkerboard.currentPlayer) return;
+        
+        if (currentlySelectedPosition.HasValue)
+        {
+            if (currentlySelectedPosition == gridPosition) return;
+            TurnOffAllOverlays();
+            currentlySelectedPosition = null;
+        }
+
+        gridCell.overlay.SetActive(true);
+        foreach (Vector2Int position in checkerboard.GetValidMoveDestinations(gridPosition))
+        {
+            grid[position.x, position.y].overlay.SetActive(true);
+        }
+        
+        currentlySelectedPosition = gridPosition;
+    }
+
+    private void TurnOffAllOverlays()
+    {
+        foreach (GridCell cell in grid)
+        {
+            cell.overlay?.SetActive(false);
+        }
+    }
+    
     private void CheckerboardOnPieceMoved(Checkerboard sender, Vector2Int origin, Vector2Int target)
     {
         throw new System.NotImplementedException();

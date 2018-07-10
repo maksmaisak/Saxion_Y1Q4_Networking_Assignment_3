@@ -9,8 +9,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <ProjectGuid>{03B9DAA7-B2A1-B8D8-D584-06FC2A0D882F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -63,16 +62,16 @@
     <Compile Include="Assets\_Own\Scripts\AI\FiniteStateMachine.cs" />
     <Compile Include="Assets\_Own\Scripts\AI\FsmState.cs" />
     <Compile Include="Assets\_Own\Scripts\AI\IAgent.cs" />
+    <Compile Include="Assets\_Own\Scripts\Client\Client.cs" />
+    <Compile Include="Assets\_Own\Scripts\Client\States\ClientStateInLobby.cs" />
+    <Compile Include="Assets\_Own\Scripts\Client\States\ClientStateInTable.cs" />
+    <Compile Include="Assets\_Own\Scripts\Client\States\ClientStateJoining.cs" />
+    <Compile Include="Assets\_Own\Scripts\Client\States\ClientStateNotConnected.cs" />
     <Compile Include="Assets\_Own\Scripts\EventsBroadcasting\BroadcastEvent.cs" />
     <Compile Include="Assets\_Own\Scripts\EventsBroadcasting\EventsManager.cs" />
     <Compile Include="Assets\_Own\Scripts\EventsBroadcasting\IEventReceiver.cs" />
     <Compile Include="Assets\_Own\Scripts\MyBehaviour.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\BroadcastEvents\NewConnection.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Client\Client.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Client\States\ClientStateInLobby.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Client\States\ClientStateinTable.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Client\States\ClientStateJoining.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Client\States\ClientStateNotConnected.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Connection.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\ConnectionMessageVerifier.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\NetworkMessage.cs" />
@@ -85,29 +84,34 @@
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\SerializedSizeMeasurer.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\StatelessUnifiedSerializable.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\UnifiedSerializerExtensions.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\ChatboxStateMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\DisconnectMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\HelpRequest.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\MakeMove.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyGameStart.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyMakeMove.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyPlayerJoinedTable.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyPlayerLeftTable.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyTableState.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\NewChatEntryMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\NewChatMessageClientToServer.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\PreJoin\JoinServerRequest.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\PreJoin\JoinServerResponse.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\PreJoin\JoinTableRequest.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\PreJoin\JoinTableResponse.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Messages\TableStateMessage.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Server\ConnectionStates\ServerConnectionStateAwaitingServerJoinRequest.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Server\ConnectionStates\ServerConnectionStateClientInLobby.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Server\ConnectionStates\ServerConnectionStateClientInTable.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Server\Model\Checkerboard.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Server\Model\Table.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Server\Server.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Server\ServerPlayer.cs" />
+    <Compile Include="Assets\_Own\Scripts\Server\ConnectionStates\ServerPlayerStateAwaitingServerJoinRequest.cs" />
+    <Compile Include="Assets\_Own\Scripts\Server\ConnectionStates\ServerPlayerStateInLobby.cs" />
+    <Compile Include="Assets\_Own\Scripts\Server\ConnectionStates\ServerPlayerStateInTable.cs" />
+    <Compile Include="Assets\_Own\Scripts\Server\Model\Checkerboard.cs" />
+    <Compile Include="Assets\_Own\Scripts\Server\Model\CheckersHelper.cs" />
+    <Compile Include="Assets\_Own\Scripts\Server\Model\Table.cs" />
+    <Compile Include="Assets\_Own\Scripts\Server\Server.cs" />
+    <Compile Include="Assets\_Own\Scripts\Server\ServerPlayer.cs" />
     <Compile Include="Assets\_Own\Scripts\Utility\Singleton.cs" />
     <Compile Include="Assets\_Own\simple_echo_interface\PanelWrapper.cs" />
     <Compile Include="Assets\_Own\simple_echo_interface\TCPEchoClient.cs" />
+    <Compile Include="Assets\_Own\Visuals\BoardView.cs" />
+    <Compile Include="Assets\_Own\Visuals\MainGamePanel.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Examples\Basics.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Examples\Sequences.cs" />
     <Compile Include="Assets\PostProcessing\Runtime\Attributes\GetSetAttribute.cs" />

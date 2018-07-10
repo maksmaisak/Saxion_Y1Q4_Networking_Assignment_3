@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BasePanel : MonoBehaviour {
-
+public class BasePanel : MonoBehaviour 
+{
     //private CanvasGroup _canvasGroup;
 
-    private void Awake()
+    void Awake()
     {
         //_canvasGroup = GetComponent<CanvasGroup>();
     }
@@ -13,7 +13,6 @@ public class BasePanel : MonoBehaviour {
     public void DisableGUI()
     {
         gameObject.SetActive(false);
-
         //_canvasGroup.interactable = false;
     }
 

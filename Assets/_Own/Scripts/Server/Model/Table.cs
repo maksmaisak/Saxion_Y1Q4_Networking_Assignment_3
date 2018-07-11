@@ -8,18 +8,13 @@ public class Table : MyBehaviour,
 {
     private ServerPlayer playerA;
     private ServerPlayer playerB;
+    private bool currentPlayerIsB;
     
     private readonly Checkerboard checkerboard = CheckersHelper.MakeDefaultCheckerboard();
 
     private bool isPlaying;
 
-    public bool isFull
-    {
-        get
-        {
-            return playerA != null && playerB != null;
-        }
-    }
+    public bool isFull => playerA && playerB;
 
     public void AddPlayer(ServerPlayer newPlayer)
     {
@@ -37,19 +32,19 @@ public class Table : MyBehaviour,
         if (otherPlayer) otherPlayer.connection.Send(new NotifyPlayerJoinedTable(newPlayer.playerId, newPlayer.nickname)); 
     }
 
-    public void SendAllAtTable(INetworkMessage message)
-    {
-        if (playerA) playerA.connection.Send(message);
-        if (playerB) playerB.connection.Send(message);
-    }
-
     void FixedUpdate()
     {
         if (!isPlaying && isFull)
         {
-            SendAllAtTable(new NotifyGameStart());
+            SendAllAtTable(new NotifyGameStart(playerA.playerId));
             isPlaying = true;
         }
+    }
+    
+    private void SendAllAtTable(INetworkMessage message)
+    {
+        if (playerA) playerA.connection.Send(message);
+        if (playerB) playerB.connection.Send(message);
     }
     
     private INetworkMessage MakeTableStateMessage()
@@ -66,7 +61,7 @@ public class Table : MyBehaviour,
     {
         const string WelcomeMessage =
             "\n" +
-            "Welcome to the server! \n" +
+            "Welcome to the table! \n" +
             "Type `\\help` to get help.";
 
         return NewChatEntryMessage.MakeWithTimestamp(WelcomeMessage, NewChatEntryMessage.Kind.ServerMessage); 
@@ -76,13 +71,21 @@ public class Table : MyBehaviour,
     {
         if (!IsFromPlayersAtThisTable(request)) return;
 
+        if (!IsFromCorrectPlayer(request))
+        {
+            Debug.LogWarning("Request to move a piece came from the wrong player.");
+            return;
+        }
+
         if (!checkerboard.TryMakeMove(request.origin, request.target))
         {
-            // TODO handle invalid move
+            Debug.LogWarning("Request to make invalid move.");
             return;
         }
         
         SendAllAtTable(new NotifyMakeMove(request.origin, request.target));
+        currentPlayerIsB = !currentPlayerIsB;
+        SendAllAtTable(new NotifyPlayerTurn(GetCurrentPlayer().playerId));
     }
 
     // TODO Have a system of multiple event queues, so you don't have to filter stuff out of the global one.
@@ -93,5 +96,17 @@ public class Table : MyBehaviour,
         if (connection != playerA.connection && connection != playerB.connection) return false;
 
         return true;
+    }
+
+    private bool IsFromCorrectPlayer(MakeMove request)
+    {
+        return request.originConnection == GetCurrentPlayer().connection;
+    }
+
+    private ServerPlayer GetCurrentPlayer()
+    {
+        Assert.IsTrue(isFull);
+        
+        return currentPlayerIsB ? playerB : playerA;
     }
 }

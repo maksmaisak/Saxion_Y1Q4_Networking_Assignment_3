@@ -14,18 +14,19 @@ public class ClientStateJoining : FsmState<Client>,
         connectPanel.SetStatusbarText("Joining server...");
     }
 
-    public void On(JoinServerResponse request)
+    public void On(JoinServerResponse response)
     {
         Assert.IsTrue(isEntered);
         
-        if (request.isReject)
+        if (response.isReject)
         {
-            connectPanel.SetStatusbarText("Rejected. Reason: " + request.rejectionMessage);
+            connectPanel.SetStatusbarText("Rejected. Reason: " + response.rejectionMessage);
             // Don't change state here, expect Disconnect from the server to do it for you.
             return;
         }
         
-        connectPanel.SetStatusbarText("Joined.");
+        connectPanel.SetStatusbarText("");
+        agent.playerId = response.playerId;
         agent.fsm.ChangeState<ClientStateInLobby>();
     }
 }

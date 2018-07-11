@@ -9,6 +9,8 @@ public class Client : Singleton<Client>, IAgent, IEventReceiver<DisconnectMessag
     public FiniteStateMachine<Client> fsm { get; private set; }
     public Connection connectionToServer  { get; private set; }
     
+    public uint playerId { get; set; }
+    
     void Start()
     {
         fsm = new FiniteStateMachine<Client>(this);

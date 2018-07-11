@@ -92,6 +92,7 @@
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyMakeMove.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyPlayerJoinedTable.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyPlayerLeftTable.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyPlayerTurn.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyTableState.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\NewChatEntryMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\NewChatMessageClientToServer.cs" />
@@ -114,6 +115,7 @@
     <Compile Include="Assets\_Own\Visuals\BoardView.cs" />
     <Compile Include="Assets\_Own\Visuals\ColorOverlay.cs" />
     <Compile Include="Assets\_Own\Visuals\PieceView.cs" />
+    <Compile Include="Assets\_Own\Visuals\TableChatPanel.cs" />
     <Compile Include="Assets\_Own\Visuals\TestBoardPlayer.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Examples\Basics.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Examples\Sequences.cs" />

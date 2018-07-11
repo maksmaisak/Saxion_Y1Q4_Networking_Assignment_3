@@ -5,26 +5,20 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Events;
 
-public class MainChatPanel : BasePanel {
-
-    [SerializeField]
-    private ScrollRect _scrollView;
-    [SerializeField]
-    private UserButton _userButtonPrefab;
-    [SerializeField]
-    private GameObject _userParent;
-    [SerializeField]
-    private Text _chatText;
-    [SerializeField]
-    private InputField _chatEntry;
-    [SerializeField]
-    private Button _send;
-    [SerializeField]
-    private Button _disconnect;
+public class MainChatPanel : BasePanel
+{
+    [SerializeField] private ScrollRect _scrollView;
+    [SerializeField] private UserButton _userButtonPrefab;
+    [SerializeField] private GameObject _userParent;
+    [SerializeField] private Text _chatText;
+    [SerializeField] private InputField _chatEntry;
+    [SerializeField] private Button _send;
+    [SerializeField] private Button _disconnect;
 
     private Dictionary<string, UserButton> _userButtonMap = new Dictionary<string, UserButton>();
 
     public delegate void OnUserClickedHandler(string pUser);
+
     public event OnUserClickedHandler OnUserClicked;
 
     private bool _focusedRequested = true;
@@ -32,11 +26,11 @@ public class MainChatPanel : BasePanel {
 
     public void AddUser(string pUserName)
     {
-       UserButton user = Instantiate(_userButtonPrefab);
-       user.onClick.AddListener(() => buttonClicked(pUserName));
-       user.SetName(pUserName);
-       user.transform.SetParent(_userParent.transform,false);
-       _userButtonMap[pUserName] = user;
+        UserButton user = Instantiate(_userButtonPrefab);
+        user.onClick.AddListener(() => buttonClicked(pUserName));
+        user.SetName(pUserName);
+        user.transform.SetParent(_userParent.transform, false);
+        _userButtonMap[pUserName] = user;
     }
 
     public void RemoveAllUsers()
@@ -50,7 +44,7 @@ public class MainChatPanel : BasePanel {
             button.onClick.RemoveAllListeners();
             Destroy(button.gameObject);
         }
-        
+
         _userButtonMap.Clear();
     }
 
@@ -65,7 +59,7 @@ public class MainChatPanel : BasePanel {
         }
     }
 
-    private void buttonClicked (string pUserName)
+    private void buttonClicked(string pUserName)
     {
         Debug.Log(pUserName);
         if (OnUserClicked != null) OnUserClicked(pUserName);
@@ -88,7 +82,7 @@ public class MainChatPanel : BasePanel {
         _scrollView.verticalNormalizedPosition = 0;
     }
 
-    public void ClearAllText ()
+    public void ClearAllText()
     {
         _chatText.text = "";
     }
@@ -125,5 +119,4 @@ public class MainChatPanel : BasePanel {
             _focusedRequested = false;
         }
     }
-
 }

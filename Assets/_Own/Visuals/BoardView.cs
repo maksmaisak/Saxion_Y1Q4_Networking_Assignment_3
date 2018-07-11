@@ -25,6 +25,7 @@ public class BoardView : MonoBehaviour
     private GridCell[,] grid;
 
     private Vector2Int? currentlySelectedPosition;
+    private bool controlsEnabled;
     
     private struct GridCell
     {
@@ -61,6 +62,15 @@ public class BoardView : MonoBehaviour
         }
         grid = null;
     }
+
+    public void SetControlsEnabled(bool newControlsEnabled)
+    {
+        controlsEnabled = newControlsEnabled;
+        if (!newControlsEnabled)
+        {
+            ClearSelection();
+        }
+    }
     
     private void InitializeGrid()
     {
@@ -77,11 +87,10 @@ public class BoardView : MonoBehaviour
     {
         var gridPosition = new Vector2Int(x, y); 
         
-        Checkerboard.TileState tile = checkerboard.GetAt(gridPosition);
-
         grid[x, y].tile    = AddTile(gridPosition);
         grid[x, y].overlay = AddOverlay(gridPosition);
         
+        Checkerboard.TileState tile = checkerboard.GetAt(gridPosition);
         if (tile != Checkerboard.TileState.None)
         {
             grid[x, y].pieceView = AddPiece(gridPosition, isWhite: tile == Checkerboard.TileState.White);
@@ -136,13 +145,13 @@ public class BoardView : MonoBehaviour
 
     private void PieceViewOnClick(PieceView sender, Vector2Int gridPosition)
     {
+        if (!controlsEnabled) return;
         if (checkerboard.GetAt(gridPosition) != checkerboard.currentPlayer) return;
         
         if (currentlySelectedPosition.HasValue)
         {
             if (currentlySelectedPosition == gridPosition) return;
-            TurnOffAllOverlays();
-            currentlySelectedPosition = null;
+            ClearSelection();
         }
 
         grid[gridPosition.x, gridPosition.y].overlay.SetActive(true);
@@ -160,22 +169,24 @@ public class BoardView : MonoBehaviour
         if (currentlySelectedPosition.Value == gridPosition) return;
         if (!checkerboard.IsValidMove(currentlySelectedPosition.Value, gridPosition)) return;
 
-        TurnOffAllOverlays();
-
         Vector2Int origin = currentlySelectedPosition.Value;
         Vector2Int target = gridPosition;
         OnMoveRequest?.Invoke(this, origin, target);
         
-        currentlySelectedPosition = null;
+        ClearSelection();
     }
 
     private void CheckerboardOnPieceAdded(Checkerboard sender, Vector2Int position)
     {
+        ClearSelection();
+        
         grid[position.x, position.y].pieceView = AddPiece(position, sender.GetAt(position) == Checkerboard.TileState.White);
     }
    
     private void CheckerboardOnPieceMoved(Checkerboard sender, Vector2Int origin, Vector2Int target)
     {
+        ClearSelection();
+        
         PieceView pieceView = grid[origin.x, origin.y].pieceView;
         
         pieceView.MoveTo(TilespaceToLocalspace(target));
@@ -187,15 +198,19 @@ public class BoardView : MonoBehaviour
     
     private void CheckerboardOnPieceRemoved(Checkerboard sender, Vector2Int position)
     {
+        ClearSelection();
+        
         grid[position.x, position.y].pieceView.Capture();
         grid[position.x, position.y].pieceView = null;
     }
     
-    private void TurnOffAllOverlays()
+    private void ClearSelection()
     {
         foreach (GridCell cell in grid)
         {
             cell.overlay?.SetActive(false);
         }
+        
+        currentlySelectedPosition = null;
     }
 }

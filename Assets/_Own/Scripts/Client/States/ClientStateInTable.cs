@@ -3,14 +3,18 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 public class ClientStateInTable : FsmState<Client>,
-    //IEventReceiver<NewChatEntryMessage>,
+    IEventReceiver<NewChatEntryMessage>,
     IEventReceiver<NotifyTableState>,
     IEventReceiver<NotifyPlayerJoinedTable>,
     IEventReceiver<NotifyPlayerLeftTable>,
-    IEventReceiver<NotifyGameStart>
+    IEventReceiver<NotifyGameStart>,
+    IEventReceiver<NotifyMakeMove>,
+    IEventReceiver<NotifyPlayerTurn>
 {
-    [SerializeField] MainChatPanel chatPanel;
+    [SerializeField] TableChatPanel chatPanel;
     [SerializeField] BoardView boardView;
+
+    private Checkerboard checkerboard;
     
     public override void Enter()
     {
@@ -23,7 +27,6 @@ public class ClientStateInTable : FsmState<Client>,
 
         chatPanel.EnableGUI();
         chatPanel.ClearAllText();
-        chatPanel.RemoveAllUsers();
         chatPanel.RegisterButtonSendClickAction(OnClickButtonSend);
         chatPanel.RegisterButtonDisconnectClickAction(OnClickButtonDisconnect);
     }
@@ -40,7 +43,6 @@ public class ClientStateInTable : FsmState<Client>,
         chatPanel.UnregisterButtonDisconnectClickActions();
     }
 
-    /*
     public void On(NewChatEntryMessage request)
     {
         Assert.IsTrue(isEntered);
@@ -56,32 +58,44 @@ public class ClientStateInTable : FsmState<Client>,
         }
 
         chatPanel.AddChatLine(message);
-    }*/
-    
+    }
+        
     public void On(NotifyTableState message)
     {
-        boardView.SetCheckerboard(message.checkerboard);
+        checkerboard = message.checkerboard;
+        boardView.SetCheckerboard(checkerboard);
     }
     
     public void On(NotifyPlayerJoinedTable message)
     {
         Assert.IsTrue(isEntered);
 
-        chatPanel.AddUser(message.nickname);
+        // TEMP. TODO receive chat messages from the server.
+        chatPanel.AddChatLine($"{message.nickname} joined the table");
     }
 
     public void On(NotifyPlayerLeftTable message)
     {
         Assert.IsTrue(isEntered);
         
-        chatPanel.RemoveUser(message.nickname);
+        // TEMP. TODO receive chat messages from the server.
+        chatPanel.AddChatLine($"{message.nickname} left the table");
     }
     
-    public void On(NotifyGameStart request)
+    public void On(NotifyGameStart message)
+    {        
+        boardView.SetControlsEnabled(agent.playerId == message.whitePlayerId);
+    }
+    
+    public void On(NotifyPlayerTurn message)
     {
-        throw new NotImplementedException();
-        
-        // TODO enable controls on the BoardView
+        boardView.SetControlsEnabled(agent.playerId == message.playerId);
+    }
+    
+    public void On(NotifyMakeMove message)
+    {
+        bool didSucceed = checkerboard.TryMakeMove(message.origin, message.target);
+        Assert.IsTrue(didSucceed);
     }
 
     private void OnMoveRequest(BoardView sender, Vector2Int origin, Vector2Int target)

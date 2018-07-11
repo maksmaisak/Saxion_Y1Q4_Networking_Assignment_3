@@ -2,17 +2,17 @@
 /// Sent to the players at a table where a game starts.
 public class NotifyGameStart : NetworkMessage<NotifyGameStart>
 {
-    public uint startingPlayerId;
+    public uint whitePlayerId;
     
     public NotifyGameStart() {}
 
-    public NotifyGameStart(uint startingPlayerId)
+    public NotifyGameStart(uint whitePlayerId)
     {
-        this.startingPlayerId = startingPlayerId;
+        this.whitePlayerId = whitePlayerId;
     }
 
     public override void Serialize(IUnifiedSerializer s)
     {
-        s.Serialize(ref startingPlayerId);
+        s.Serialize(ref whitePlayerId);
     }
 }

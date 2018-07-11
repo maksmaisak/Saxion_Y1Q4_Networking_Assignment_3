@@ -22,7 +22,7 @@ public class Server : Singleton<Server>
     
     private Thread listeningThread;
 
-    private uint nextPlayerId;
+    private uint nextPlayerId = 1;
     
     void Start()
     {

@@ -21,10 +21,11 @@ public class ClientStateNotConnected : FsmState<Client>
     public override void Enter()
     {
         base.Enter();
+
+        agent.playerId = 0;
         
         connectPanel.EnableGUI();
         connectPanel.RegisterButtonConnectClickAction(OnConnectButtonClicked);
-        connectPanel.SetStatusbarText("");
         
         enteredNickname = null;
     }

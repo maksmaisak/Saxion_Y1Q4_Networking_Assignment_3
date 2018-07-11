@@ -696,7 +696,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 189335897}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.9999999
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2069,8 +2069,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 83.899994, y: -20}
-  m_SizeDelta: {x: 127.79999, y: 32.880737}
+  m_AnchoredPosition: {x: 163.06308, y: -20}
+  m_SizeDelta: {x: 286.12616, y: 32.49231}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &374247183
 MonoBehaviour:
@@ -2890,8 +2890,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000007628048, y: 0.00002215554}
-  m_SizeDelta: {x: 0, y: 72.88074}
+  m_AnchoredPosition: {x: -0.000061035156, y: 0.00002215554}
+  m_SizeDelta: {x: 0, y: 72.49231}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &656298144
 MonoBehaviour:
@@ -6070,7 +6070,7 @@ GameObject:
   - component: {fileID: 1732881817}
   - component: {fileID: 1732881818}
   m_Layer: 5
-  m_Name: TablePanel
+  m_Name: TableChatPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6105,16 +6105,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1732881815}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2d577483d2e3c94c9bb0ce93ef25a1c, type: 3}
+  m_Script: {fileID: 11500000, guid: a73783ee83f646f4b8c1599778753a70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _scrollView: {fileID: 691945728}
-  _userButtonPrefab: {fileID: 11478498, guid: 26cba65168cb7264ca21db28d99326d4, type: 2}
-  _userParent: {fileID: 0}
-  _chatText: {fileID: 374247183}
-  _chatEntry: {fileID: 1112755143}
-  _send: {fileID: 1526210676}
-  _disconnect: {fileID: 2062585418}
+  scrollViewChat: {fileID: 691945728}
+  chatText: {fileID: 374247183}
+  chatEntry: {fileID: 1112755143}
+  send: {fileID: 1526210676}
+  disconnect: {fileID: 2062585418}
 --- !u!225 &1732881818
 CanvasGroup:
   m_ObjectHideFlags: 0

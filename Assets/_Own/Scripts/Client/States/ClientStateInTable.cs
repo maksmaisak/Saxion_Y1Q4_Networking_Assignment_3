@@ -83,12 +83,14 @@ public class ClientStateInTable : FsmState<Client>,
     }
     
     public void On(NotifyGameStart message)
-    {        
+    {
+        WriteToChatAsServer("Game is starting");
         boardView.SetControlsEnabled(agent.playerId == message.whitePlayerId);
     }
     
     public void On(NotifyPlayerTurn message)
     {
+        WriteToChatAsServer($"{message.playerId}'s turn");
         boardView.SetControlsEnabled(agent.playerId == message.playerId);
     }
     
@@ -100,6 +102,7 @@ public class ClientStateInTable : FsmState<Client>,
 
     private void OnMoveRequest(BoardView sender, Vector2Int origin, Vector2Int target)
     {
+        sender.SetControlsEnabled(false);
         agent.connectionToServer.Send(new MakeMove(origin, target));
     }
 
@@ -134,6 +137,11 @@ public class ClientStateInTable : FsmState<Client>,
         {
             connection.Send(new NewChatMessageClientToServer(message));
         }
+    }
+
+    private void WriteToChatAsServer(string message)
+    {
+        chatPanel.AddChatLine(FormatServerMessage(message));
     }
 
     private static string FormatServerMessage(string message)

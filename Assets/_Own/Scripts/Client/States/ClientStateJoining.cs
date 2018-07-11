@@ -27,6 +27,7 @@ public class ClientStateJoining : FsmState<Client>,
         
         connectPanel.SetStatusbarText("");
         agent.playerId = response.playerId;
+       
         agent.fsm.ChangeState<ClientStateInLobby>();
     }
 }

@@ -14,6 +14,7 @@ public class TestBoardPlayer : MonoBehaviour
 
         checkerboard = CheckersHelper.MakeDefaultCheckerboard();
         boardView.SetCheckerboard(checkerboard);
+        boardView.SetControlsEnabled(true);
         boardView.OnMoveRequest += OnMoveRequest;
         //checkerboard.AddAt(new Vector2Int(3, 3), Checkerboard.TileState.Black);
     }

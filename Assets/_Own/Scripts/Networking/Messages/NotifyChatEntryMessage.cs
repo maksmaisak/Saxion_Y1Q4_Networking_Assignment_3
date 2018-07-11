@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-public class NewChatEntryMessage : NetworkMessage<NewChatEntryMessage>
+public class NotifyChatEntryMessage : NetworkMessage<NotifyChatEntryMessage>
 {
     public enum Kind
     {
@@ -13,14 +13,14 @@ public class NewChatEntryMessage : NetworkMessage<NewChatEntryMessage>
     public Kind kind = Kind.Message;
     public string message;
     
-    public static NewChatEntryMessage MakeWithTimestamp(string message, Kind kind = Kind.Message)
+    public static NotifyChatEntryMessage MakeWithTimestamp(string message, Kind kind = Kind.Message)
     {
-        return new NewChatEntryMessage($"{GetTimestampNow()} {message}", kind);
+        return new NotifyChatEntryMessage($"{GetTimestampNow()} {message}", kind);
     }
 
-    public NewChatEntryMessage() {}
+    public NotifyChatEntryMessage() {}
 
-    public NewChatEntryMessage(string message, Kind kind = Kind.Message)
+    public NotifyChatEntryMessage(string message, Kind kind = Kind.Message)
     {
         this.kind = kind;
         this.message = message;

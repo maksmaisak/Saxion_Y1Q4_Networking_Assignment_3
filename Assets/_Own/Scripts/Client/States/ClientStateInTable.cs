@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 public class ClientStateInTable : FsmState<Client>,
-    IEventReceiver<NewChatEntryMessage>,
+    IEventReceiver<NotifyChatEntryMessage>,
     IEventReceiver<NotifyTableState>,
     IEventReceiver<NotifyPlayerJoinedTable>,
     IEventReceiver<NotifyPlayerLeftTable>,
@@ -11,7 +11,7 @@ public class ClientStateInTable : FsmState<Client>,
     IEventReceiver<NotifyMakeMove>,
     IEventReceiver<NotifyPlayerTurn>
 {
-    [SerializeField] TableChatPanel chatPanel;
+    [SerializeField] TableUIPanel uiPanel;
     [SerializeField] BoardView boardView;
 
     private Checkerboard checkerboard;
@@ -20,15 +20,15 @@ public class ClientStateInTable : FsmState<Client>,
     {
         base.Enter();
         
-        Assert.IsNotNull(chatPanel);
+        Assert.IsNotNull(uiPanel);
 
         boardView.gameObject.SetActive(true);
         boardView.OnMoveRequest += OnMoveRequest;
 
-        chatPanel.EnableGUI();
-        chatPanel.ClearAllText();
-        chatPanel.RegisterButtonSendClickAction(OnClickButtonSend);
-        chatPanel.RegisterButtonDisconnectClickAction(OnClickButtonDisconnect);
+        uiPanel.EnableGUI();
+        uiPanel.ClearAllText();
+        uiPanel.RegisterButtonSendClickAction(OnClickButtonSend);
+        uiPanel.RegisterButtonDisconnectClickAction(OnClickButtonDisconnect);
     }
 
     public override void Exit()
@@ -38,26 +38,26 @@ public class ClientStateInTable : FsmState<Client>,
         boardView.Clear();
         boardView.gameObject.SetActive(false);
         
-        chatPanel.DisableGUI();
-        chatPanel.UnregisterButtonSendClickActions();
-        chatPanel.UnregisterButtonDisconnectClickActions();
+        uiPanel.DisableGUI();
+        uiPanel.UnregisterButtonSendClickActions();
+        uiPanel.UnregisterButtonDisconnectClickActions();
     }
 
-    public void On(NewChatEntryMessage request)
+    public void On(NotifyChatEntryMessage request)
     {
         Assert.IsTrue(isEntered);
 
         var message = request.message;
         switch (request.kind)
         {
-            case NewChatEntryMessage.Kind.ServerMessage:
+            case NotifyChatEntryMessage.Kind.ServerMessage:
                 message = FormatServerMessage(message);
                 break;
             default:
                 break;
         }
 
-        chatPanel.AddChatLine(message);
+        uiPanel.AddChatLine(message);
     }
         
     public void On(NotifyTableState message)
@@ -69,29 +69,23 @@ public class ClientStateInTable : FsmState<Client>,
     public void On(NotifyPlayerJoinedTable message)
     {
         Assert.IsTrue(isEntered);
-
-        // TEMP. TODO receive chat messages from the server.
-        WriteToChatAsSystem($"{message.nickname} joined the table");
     }
 
     public void On(NotifyPlayerLeftTable message)
     {
         Assert.IsTrue(isEntered);
-        
-        // TEMP. TODO receive chat messages from the server.
-        WriteToChatAsSystem($"{message.nickname} left the table");
     }
     
     public void On(NotifyGameStart message)
     {
-        WriteToChatAsSystem("Game is starting");
-        boardView.SetControlsEnabled(agent.playerId == message.whitePlayerId);
+        Assert.IsTrue(isEntered);
     }
     
     public void On(NotifyPlayerTurn message)
     {
-        WriteToChatAsSystem($"{message.playerId}'s turn");
-        boardView.SetControlsEnabled(agent.playerId == message.playerId);
+        bool isOwnTurn = agent.playerId == message.playerId;
+        boardView.SetControlsEnabled(isOwnTurn);
+        uiPanel.SetStatusText(isOwnTurn ? "Your turn" : $"{message.playerNickname}'s turn");
     }
     
     public void On(NotifyMakeMove message)
@@ -110,11 +104,11 @@ public class ClientStateInTable : FsmState<Client>,
     {
         Debug.Log("OnClickButtonSend");
         
-        string message = chatPanel.GetChatEntry();
+        string message = uiPanel.GetChatEntry();
         if (string.IsNullOrEmpty(message)) return;
 
         HandleMessageText(message);
-        chatPanel.SetChatEntry("");
+        uiPanel.SetChatEntry("");
     }
     
     private void OnClickButtonDisconnect()
@@ -141,7 +135,7 @@ public class ClientStateInTable : FsmState<Client>,
 
     private void WriteToChatAsSystem(string message)
     {
-        chatPanel.AddChatLine(FormatServerMessage(message));
+        uiPanel.AddChatLine(FormatServerMessage(message));
     }
 
     private static string FormatServerMessage(string message)

@@ -3,15 +3,17 @@ using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine.Events;
 
-public class TableChatPanel : BasePanel
+public class TableUIPanel : BasePanel
 {
     [SerializeField] private ScrollRect scrollViewChat;
     [SerializeField] private Text chatText;
     [SerializeField] private InputField chatEntry;
     [SerializeField] private Button send;
     [SerializeField] private Button disconnect;
+    [SerializeField] private TextMeshProUGUI statusBarText;
 
     private bool focusedRequested = true;
 
@@ -32,9 +34,15 @@ public class TableChatPanel : BasePanel
         scrollViewChat.verticalNormalizedPosition = 0;
     }
 
+    public void SetStatusText(string text)
+    {
+        statusBarText.text = text;
+    }
+    
     public void ClearAllText()
     {
         chatText.text = "";
+        statusBarText.text = "";
     }
 
     public void RegisterButtonSendClickAction(UnityAction pAction)
@@ -59,8 +67,8 @@ public class TableChatPanel : BasePanel
     {
         disconnect.onClick.RemoveAllListeners();
     }
-
-    public void Update()
+    
+    void Update()
     {
         if (focusedRequested)
         {

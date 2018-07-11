@@ -2,6 +2,3 @@ sceneSetups:
 - path: Assets/_Own/Scenes/client.unity
   isLoaded: 1
   isActive: 1
-- path: Assets/_Own/Scenes/server.unity
-  isLoaded: 1
-  isActive: 0

@@ -20,17 +20,14 @@ public class Table : MyBehaviour,
     {
         Assert.IsNotNull(newPlayer);
         Assert.IsTrue(playerA == null || playerB == null);
-
-        bool aIsNull = playerA == null;
-        ServerPlayer otherPlayer = aIsNull ? playerB : playerA;
         
-        if (aIsNull) playerA = newPlayer;
+        if (playerA == null) playerA = newPlayer;
         else playerB = newPlayer;
         
         newPlayer.connection.Send(MakeTableStateMessage());
         
         SendAllAtTable(new NotifyPlayerJoinedTable(newPlayer.playerId, newPlayer.nickname)); 
-        SendAllAtTable(MakeServerChatMessage($"{GetCurrentPlayer().nickname}: joined the table"));
+        SendAllAtTable(MakeServerChatMessage($"{newPlayer.nickname}: joined the table"));
     }
 
     void FixedUpdate()
@@ -38,6 +35,10 @@ public class Table : MyBehaviour,
         if (!isPlaying && isFull)
         {
             SendAllAtTable(new NotifyGameStart(playerA.playerId));
+            SendAllAtTable(MakeServerChatMessage("The game is starting."));
+            
+            AnnounceNewTurn(GetCurrentPlayer());
+            
             isPlaying = true;
         }
     }
@@ -81,8 +82,7 @@ public class Table : MyBehaviour,
         // TODO Check victory
         
         currentPlayerIsB = !currentPlayerIsB;
-        SendAllAtTable(new NotifyPlayerTurn(GetCurrentPlayer().playerId));
-        SendAllAtTable(MakeServerChatMessage($"{GetCurrentPlayer().nickname}'s turn."));
+        AnnounceNewTurn(GetCurrentPlayer());
     }
 
     // TODO Have a system of multiple event queues, so you don't have to filter stuff out of the global one.
@@ -107,8 +107,14 @@ public class Table : MyBehaviour,
         return currentPlayerIsB ? playerB : playerA;
     }
 
-    private NewChatEntryMessage MakeServerChatMessage(string message)
+    private void AnnounceNewTurn(ServerPlayer player)
     {
-        return NewChatEntryMessage.MakeWithTimestamp(message, NewChatEntryMessage.Kind.ServerMessage); 
+        SendAllAtTable(new NotifyPlayerTurn(player.playerId, player.nickname));
+        SendAllAtTable(MakeServerChatMessage($"{player.nickname}'s turn."));
+    }
+    
+    private NotifyChatEntryMessage MakeServerChatMessage(string message)
+    {
+        return NotifyChatEntryMessage.MakeWithTimestamp(message, NotifyChatEntryMessage.Kind.ServerMessage); 
     }
 }

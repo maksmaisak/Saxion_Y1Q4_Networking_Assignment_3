@@ -71,7 +71,7 @@ public class ClientStateInTable : FsmState<Client>,
         Assert.IsTrue(isEntered);
 
         // TEMP. TODO receive chat messages from the server.
-        chatPanel.AddChatLine($"{message.nickname} joined the table");
+        WriteToChatAsSystem($"{message.nickname} joined the table");
     }
 
     public void On(NotifyPlayerLeftTable message)
@@ -79,18 +79,18 @@ public class ClientStateInTable : FsmState<Client>,
         Assert.IsTrue(isEntered);
         
         // TEMP. TODO receive chat messages from the server.
-        chatPanel.AddChatLine($"{message.nickname} left the table");
+        WriteToChatAsSystem($"{message.nickname} left the table");
     }
     
     public void On(NotifyGameStart message)
     {
-        WriteToChatAsServer("Game is starting");
+        WriteToChatAsSystem("Game is starting");
         boardView.SetControlsEnabled(agent.playerId == message.whitePlayerId);
     }
     
     public void On(NotifyPlayerTurn message)
     {
-        WriteToChatAsServer($"{message.playerId}'s turn");
+        WriteToChatAsSystem($"{message.playerId}'s turn");
         boardView.SetControlsEnabled(agent.playerId == message.playerId);
     }
     
@@ -139,7 +139,7 @@ public class ClientStateInTable : FsmState<Client>,
         }
     }
 
-    private void WriteToChatAsServer(string message)
+    private void WriteToChatAsSystem(string message)
     {
         chatPanel.AddChatLine(FormatServerMessage(message));
     }

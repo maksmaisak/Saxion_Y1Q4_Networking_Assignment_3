@@ -28,8 +28,9 @@ public class Table : MyBehaviour,
         else playerB = newPlayer;
         
         newPlayer.connection.Send(MakeTableStateMessage());
-        newPlayer.connection.Send(MakeChatGreeting());
-        if (otherPlayer) otherPlayer.connection.Send(new NotifyPlayerJoinedTable(newPlayer.playerId, newPlayer.nickname)); 
+        
+        SendAllAtTable(new NotifyPlayerJoinedTable(newPlayer.playerId, newPlayer.nickname)); 
+        SendAllAtTable(MakeServerChatMessage($"{GetCurrentPlayer().nickname}: joined the table"));
     }
 
     void FixedUpdate()
@@ -56,16 +57,6 @@ public class Table : MyBehaviour,
             playerBNickname = playerB?.nickname
         };
     }
-    
-    private NewChatEntryMessage MakeChatGreeting()
-    {
-        const string WelcomeMessage =
-            "\n" +
-            "Welcome to the table! \n" +
-            "Type `\\help` to get help.";
-
-        return NewChatEntryMessage.MakeWithTimestamp(WelcomeMessage, NewChatEntryMessage.Kind.ServerMessage); 
-    }
 
     public void On(MakeMove request)
     {
@@ -84,8 +75,14 @@ public class Table : MyBehaviour,
         }
         
         SendAllAtTable(new NotifyMakeMove(request.origin, request.target));
+        SendAllAtTable(MakeServerChatMessage($"{GetCurrentPlayer().nickname}: {request.origin} to {request.target}"));
+        
+        // TODO Check double capture
+        // TODO Check victory
+        
         currentPlayerIsB = !currentPlayerIsB;
         SendAllAtTable(new NotifyPlayerTurn(GetCurrentPlayer().playerId));
+        SendAllAtTable(MakeServerChatMessage($"{GetCurrentPlayer().nickname}'s turn."));
     }
 
     // TODO Have a system of multiple event queues, so you don't have to filter stuff out of the global one.
@@ -108,5 +105,10 @@ public class Table : MyBehaviour,
         Assert.IsTrue(isFull);
         
         return currentPlayerIsB ? playerB : playerA;
+    }
+
+    private NewChatEntryMessage MakeServerChatMessage(string message)
+    {
+        return NewChatEntryMessage.MakeWithTimestamp(message, NewChatEntryMessage.Kind.ServerMessage); 
     }
 }

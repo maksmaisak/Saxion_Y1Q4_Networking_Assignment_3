@@ -132,17 +132,6 @@ public class BoardView : MonoBehaviour
         return piece;
     }
     
-    private Vector3 TilespaceToLocalspace(Vector2Int gridPosition)
-    {
-        Vector2 tileSize = new Vector2(1f, 1f);
-        
-        Vector2 position = Vector2.Scale(tileSize, gridPosition);
-        position -= Vector2.Scale(tileSize, checkerboard.size) * 0.5f;
-        position += tileSize * 0.5f;
-
-        return new Vector3(position.x, 0f, position.y);
-    }
-
     private void PieceViewOnClick(PieceView sender, Vector2Int gridPosition)
     {
         if (!controlsEnabled) return;
@@ -213,4 +202,16 @@ public class BoardView : MonoBehaviour
         
         currentlySelectedPosition = null;
     }
+    
+    private Vector3 TilespaceToLocalspace(Vector2Int gridPosition)
+    {
+        Vector2 tileSize = new Vector2(1f, 1f);
+        
+        Vector2 position = Vector2.Scale(tileSize, gridPosition);
+        position -= Vector2.Scale(tileSize, checkerboard.size) * 0.5f;
+        position += tileSize * 0.5f;
+
+        return new Vector3(position.x, 0f, position.y);
+    }
+
 }

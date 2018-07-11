@@ -134,7 +134,7 @@ public class ClientStateNotConnected : FsmState<Client>
         Connection connection = MakeConnection(connectionTask.Result);
         agent.SetConnectionToServer(connection);
         agent.connectionToServer.Send(new JoinServerRequest(enteredNickname));
-            
+        
         agent.fsm.ChangeState<ClientStateJoining>();
     }
 

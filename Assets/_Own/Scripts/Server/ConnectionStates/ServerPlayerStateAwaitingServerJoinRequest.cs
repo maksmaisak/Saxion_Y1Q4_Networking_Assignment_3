@@ -35,10 +35,10 @@ public class ServerPlayerStateAwaitingServerJoinRequest : FsmState<ServerPlayer>
     }
 
     private bool RejectIfNeeded(JoinServerRequest request)
-    {
+    {   
         if (!request.GetIsValid())
         {
-            agent.connection.Send(JoinServerResponse.MakeReject("Invalid JoinServerRequest."));
+            agent.connection.Send(JoinServerResponse.MakeReject("Invalid JoinServerRequest"));
             KickClient();
             return true;
         }
@@ -47,7 +47,7 @@ public class ServerPlayerStateAwaitingServerJoinRequest : FsmState<ServerPlayer>
         
         if (Server.Instance.joinedPlayers.Any(p => p.nickname == request.nickname))
         {
-            agent.connection.Send(JoinTableResponse.MakeReject($"Username {request.nickname} is already taken."));
+            agent.connection.Send(JoinServerResponse.MakeReject($"Username {request.nickname} is already taken"));
             KickClient();
             return true;
         }

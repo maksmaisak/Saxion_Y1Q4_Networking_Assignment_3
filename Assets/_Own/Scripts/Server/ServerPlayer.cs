@@ -39,6 +39,8 @@ public class ServerPlayer : MyBehaviour, IAgent,
     
     public void On(DisconnectMessage request)
     {
+        if (request.originConnection != connection) return;
+        
         connection.Close();
     }
 

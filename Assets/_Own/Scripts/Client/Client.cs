@@ -33,7 +33,7 @@ public class Client : Singleton<Client>, IAgent, IEventReceiver<DisconnectMessag
         connectionToServer = connection;
     }
 
-    public void On(DisconnectMessage request)
+    public void On(DisconnectMessage message)
     {
         connectionToServer.Close();
     }

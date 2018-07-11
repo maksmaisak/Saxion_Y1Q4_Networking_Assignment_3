@@ -28,9 +28,17 @@ public class Connection : MonoBehaviour
     private NetworkStream networkStream;
     private readonly ConcurrentQueue<INetworkMessage> messagesToSend    = new ConcurrentQueue<INetworkMessage>();
     private readonly ConcurrentQueue<INetworkMessage> messagesToProcess = new ConcurrentQueue<INetworkMessage>();
+
+    // Any operations with networkStream are in a ReadBlock (so they can happen simultaneously).
+    // Closing the network stream is in a WriteBlock (so nothing else can happen when it does it).
+    private readonly ReaderWriterLockSlim readWriteLocker = new ReaderWriterLockSlim();
+    private readonly object locker = new object();
     
     private bool isInitialized;
     private bool didReceiveSinceLastUpdate;
+
+    private Thread receivingThread;
+    private Thread sendingThread;
 
     public void Initialize(TcpClient client)
     {
@@ -45,8 +53,12 @@ public class Connection : MonoBehaviour
         
         timeOfLastReceive = Time.time;
         state = State.Running;
-        new Thread(ReceivingThread) {IsBackground = true}.Start();
-        new Thread(SendingThread  ) {IsBackground = true}.Start();
+        
+        receivingThread = new Thread(ReceivingThread) {IsBackground = true};
+        receivingThread.Start();
+        
+        sendingThread = new Thread(SendingThread) {IsBackground = true};
+        sendingThread.Start();
     }
 
     public void Send(INetworkMessage message)
@@ -58,17 +70,16 @@ public class Connection : MonoBehaviour
 
     public void Close()
     {
-        if (state == State.Closed) return;
-        
-        //Assert.AreNotEqual(State.Closed, state, "Connection is already closed.");
-        
-        // TODO Push all messages in queue before actually closing the stream. 
-        state = State.Closing;
+        lock (locker)
+        {
+            if (state == State.Closing || state == State.Closed) return;
+            state = State.Closing;
+        }
     }
     
     void OnDestroy()
     {
-        CloseClient();
+        Close();
     }
     
     void FixedUpdate()
@@ -95,11 +106,15 @@ public class Connection : MonoBehaviour
                 INetworkMessage message = NetworkMessageSerializer.Deserialize(networkStream);
                 message.InitializeOnReceived(this);
                 Debug.Log("Received " + message);
-                
+
                 messagesToProcess.Enqueue(message);
                 message.PostEvent();
 
                 didReceiveSinceLastUpdate = true;
+            }
+            catch (ThreadAbortException)
+            {
+                return;
             }
             catch (Exception ex)
             {
@@ -125,20 +140,25 @@ public class Connection : MonoBehaviour
         if (state == State.Closing)
         {
             SendAllMessagesInQueue();
+            CloseClient();
         }
-
-        CloseClient();
     }
 
     private void CloseClient()
     {
         if (state != State.Running && state != State.Closing) return;
         
-        // TODO use lock when reading/writing with the networkStream on receiving/sending threads.
-        lock (client)
+        receivingThread.Abort();
+        
+        readWriteLocker.EnterWriteLock();
+        try
         {
             client.Close();
             networkStream.Close();
+        }
+        finally
+        {
+            readWriteLocker.ExitWriteLock();
         }
 
         state = State.Closed;
@@ -152,6 +172,7 @@ public class Connection : MonoBehaviour
             Assert.IsNotNull(message);
             Debug.Log("Sending " + message);
 
+            readWriteLocker.EnterReadLock();
             try
             {
                 NetworkMessageSerializer.Serialize(message, networkStream);
@@ -161,6 +182,10 @@ public class Connection : MonoBehaviour
                 Debug.Log("Exception while serializing a network message: " + ex);
                 Close();
                 break;
+            }
+            finally
+            {
+                readWriteLocker.ExitReadLock();
             }
         }   
     }

@@ -67,7 +67,7 @@ public class Checkerboard : IUnifiedSerializable
         Vector2Int direction = new Vector2Int(Math.Sign(delta.x), Math.Sign(delta.y));
         Vector2Int absDelta  = new Vector2Int(      Abs(delta.x),       Abs(delta.y));
 
-        if ((direction.y < 0) == (currentPlayerColor == TileState.White)) return false; // Wrong direction
+        //if ((direction.y < 0) == (currentPlayerColor == TileState.White)) return false; // Wrong direction
         if (absDelta.x != absDelta.y) return false; // Not diagonal
         if (absDelta.x == 0) return false; // No move
         if (absDelta.x >  2) return false; // Too long

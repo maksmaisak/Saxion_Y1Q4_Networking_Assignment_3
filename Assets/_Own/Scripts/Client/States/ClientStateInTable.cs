@@ -42,6 +42,7 @@ public class ClientStateInTable : FsmState<Client>,
 
         checkerboardView.Clear();
         checkerboardView.gameObject.SetActive(false);
+        checkerboardView.OnMoveRequest -= OnMoveRequest;
         
         uiPanel.DisableGUI();
         uiPanel.UnregisterButtonSendClickActions();

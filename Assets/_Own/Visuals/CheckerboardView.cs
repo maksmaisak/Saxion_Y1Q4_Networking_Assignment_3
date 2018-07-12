@@ -47,6 +47,16 @@ public class CheckerboardView : MonoBehaviour
         checkerboard.OnPieceRemoved += CheckerboardOnPieceRemoved;
     }
     
+    public void SetOwnColor(Checkerboard.TileState tileState)
+    {
+        Assert.AreNotEqual(Checkerboard.TileState.None, tileState);
+
+        float targetRotation = tileState == Checkerboard.TileState.Black ? 180f : 0f;
+        transform.localRotation = Quaternion.Euler(0f, targetRotation, 0f);
+        
+        // TODO also enable/disable controls based on own color.
+    }
+    
     public void Clear()
     {
         if (checkerboard != null)

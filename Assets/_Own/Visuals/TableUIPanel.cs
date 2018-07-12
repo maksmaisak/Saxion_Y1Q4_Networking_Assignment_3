@@ -31,7 +31,7 @@ public class TableUIPanel : BasePanel
     public void AddChatLine(string pChatLine)
     {
         chatText.text += pChatLine + "\n";
-        scrollViewChat.verticalNormalizedPosition = 0;
+        scrollViewChat.verticalNormalizedPosition = 0f;
     }
 
     public void SetStatusText(string text)

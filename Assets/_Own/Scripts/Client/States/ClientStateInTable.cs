@@ -99,6 +99,9 @@ public class ClientStateInTable : FsmState<Client>,
         checkerboard = message.checkerboard;
         checkerboardView.Clear();
         checkerboardView.SetCheckerboard(checkerboard);
+
+        bool isThisWhite = message.whitePlayerId == agent.playerInfo.id;
+        checkerboardView.SetOwnColor(isThisWhite ? Checkerboard.TileState.White : Checkerboard.TileState.Black);
     }
     
     public void On(NotifyPlayerTurn message)

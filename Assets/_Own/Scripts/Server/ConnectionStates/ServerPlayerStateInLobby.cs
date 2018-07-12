@@ -10,13 +10,14 @@ public class ServerPlayerStateInLobby : FsmState<ServerPlayer>,
         if (RejectIfNeeded(request)) return;
         
         agent.connection.Send(JoinTableResponse.Accept);
-        Server.Instance.table.AddPlayer(agent);
+        Server.Instance.GetNonFullTable().AddPlayer(agent);
         agent.fsm.ChangeState<ServerPlayerStateInTable>();
     }
 
     private bool RejectIfNeeded(JoinTableRequest request)
     {
-        if (Server.Instance.table.isFull)
+        var table = Server.Instance.GetNonFullTable();
+        if (!table || table.isFull)
         {
             var message = JoinTableResponse.MakeReject("The table is already full.");
             agent.connection.Send(message);

@@ -161,16 +161,7 @@ public class ClientStateInTable : FsmState<Client>,
 
     private void HandleMessageText(string message)
     {
-        Connection connection = agent.connectionToServer;
-
-        if (message.Trim() == "\\help")
-        {
-            connection.Send(new HelpRequest());
-        }
-        else
-        {
-            connection.Send(new NewChatMessageClientToServer(message));
-        }
+        agent.connectionToServer.Send(new NewChatMessageClientToServer(message));
     }
 
     private void WriteToChatAsSystem(string message)

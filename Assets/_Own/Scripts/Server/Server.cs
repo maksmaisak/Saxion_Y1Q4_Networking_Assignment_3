@@ -18,7 +18,7 @@ public class Server : Singleton<Server>
     private readonly ConcurrentQueue<TcpClient> pendingConnectedTcpClients = new ConcurrentQueue<TcpClient>();
     public readonly HashSet<ServerPlayer> joinedPlayers = new HashSet<ServerPlayer>();
 
-    public Table table { get; private set; }
+    private List<Table> tables = new List<Table>();
     
     private Thread listeningThread;
 
@@ -28,8 +28,6 @@ public class Server : Singleton<Server>
     {
         Assert.IsNotNull(connectionPrefab);
         Assert.IsNotNull(tablePrefab);
-
-        table = Instantiate(tablePrefab, transform);
         
         listeningThread = new Thread(Listen) {IsBackground = true};
         listeningThread.Start();
@@ -67,6 +65,20 @@ public class Server : Singleton<Server>
         {
             player.connection.Send(message);
         }
+    }
+
+    public Table GetNonFullTable()
+    {
+        tables.RemoveAll(t => !t);
+        
+        Table table = tables.Find(t => !t.isFull);
+        if (table == null)
+        {
+            table = Instantiate(tablePrefab, transform);
+            tables.Add(table);
+        }
+
+        return table;
     }
 
     private void Listen()

@@ -84,9 +84,7 @@
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\SerializedSizeMeasurer.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\StatelessUnifiedSerializable.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\UnifiedSerializerExtensions.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Messages\ChatboxStateMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\DisconnectMessage.cs" />
-    <Compile Include="Assets\_Own\Scripts\Networking\Messages\HelpRequest.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\MakeMove.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyGameStart.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyMakeMove.cs" />
@@ -117,6 +115,7 @@
     <Compile Include="Assets\_Own\Visuals\CheckerboardView.cs" />
     <Compile Include="Assets\_Own\Visuals\ColorOverlay.cs" />
     <Compile Include="Assets\_Own\Visuals\PieceView.cs" />
+    <Compile Include="Assets\_Own\Visuals\TableListItemView.cs" />
     <Compile Include="Assets\_Own\Visuals\TableUIPanel.cs" />
     <Compile Include="Assets\_Own\Visuals\TestBoardPlayer.cs" />
     <Compile Include="Assets\Demigiant\DOTween\Examples\Basics.cs" />

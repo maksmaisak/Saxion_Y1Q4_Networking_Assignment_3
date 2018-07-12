@@ -35,6 +35,7 @@ public class Checkerboard : IUnifiedSerializable
     public event PieceMoveHandler OnPieceMoved;
     
     public TileState currentPlayerColor { get; private set; }
+    public bool isDoingAMultiCapture { get; private set; }
     
     private TileState[,] tiles;
     public Vector2Int size { get; private set; }
@@ -76,6 +77,8 @@ public class Checkerboard : IUnifiedSerializable
             return GetAt(origin + direction) == GetOppositePlayer(currentPlayerColor); // Can't capture
         }
 
+        if (isDoingAMultiCapture) return false; // Only captures are allowed during a multi-capture
+
         return true;
     }
 
@@ -114,11 +117,13 @@ public class Checkerboard : IUnifiedSerializable
             // Don't switch players if a multi-capture is possible
             if (IsCapturePossibleOutOf(target))
             {
+                isDoingAMultiCapture = true;
                 OnMultiCapture?.Invoke(this, target);
                 return true;
             }
         }
-        
+
+        isDoingAMultiCapture = false;
         currentPlayerColor = GetOppositePlayer(currentPlayerColor);
         
         return true;

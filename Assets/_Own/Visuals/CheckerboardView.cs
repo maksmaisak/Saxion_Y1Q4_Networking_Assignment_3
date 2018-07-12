@@ -86,7 +86,7 @@ public class CheckerboardView : MonoBehaviour
     public void SetControlsEnabled(bool newControlsEnabled)
     {
         controlsEnabled = newControlsEnabled;
-        if (!newControlsEnabled)
+        if (!newControlsEnabled && checkerboard != null)
         {
             ClearSelection();
         }

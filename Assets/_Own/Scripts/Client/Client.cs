@@ -35,6 +35,7 @@ public class Client : Singleton<Client>, IAgent, IEventReceiver<DisconnectMessag
 
     public void On(DisconnectMessage message)
     {
+        if (message.originConnection != connectionToServer) return;
         connectionToServer.Close();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -25,7 +26,8 @@ public static class NetworkMessageSerializer
     }
 
     private static readonly MessageTypeInfo[] MessageTypeInfos;
-    private static readonly Dictionary<Type, ushort> MessageTypeIndices = new Dictionary<Type, ushort>();
+    //private static readonly Dictionary<Type, ushort> MessageTypeIndices = new Dictionary<Type, ushort>();
+    private static readonly ConcurrentDictionary<Type, ushort> MessageTypeIndices = new ConcurrentDictionary<Type, ushort>();
     
     static NetworkMessageSerializer()
     {
@@ -40,7 +42,8 @@ public static class NetworkMessageSerializer
         int numTypes = MessageTypeInfos.Length;
         for (ushort index = 0; index < numTypes; ++index)
         {
-            MessageTypeIndices.Add(MessageTypeInfos[index].type, index);
+            bool success = MessageTypeIndices.TryAdd(MessageTypeInfos[index].type, index);
+            Assert.IsTrue(success);
         }
     }
 

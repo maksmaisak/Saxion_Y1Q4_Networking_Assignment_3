@@ -13,7 +13,7 @@ public static class CheckersHelper
             for (int x = 0; x < checkerboard.size.x; ++x)
             {
                 if ((x % 2 == 0) ^ (y % 2 == 0)) continue;
-                checkerboard.AddAt(new Vector2Int(x, y), Checkerboard.TileState.White);
+                checkerboard.AddPieceAt(new Vector2Int(x, y), Checkerboard.TileState.White);
             }
         }
         
@@ -22,7 +22,7 @@ public static class CheckersHelper
             for (int x = 0; x < checkerboard.size.x; ++x)
             {
                 if ((x % 2 == 0) ^ (y % 2 == 0)) continue;
-                checkerboard.AddAt(new Vector2Int(x, y), Checkerboard.TileState.Black);
+                checkerboard.AddPieceAt(new Vector2Int(x, y), Checkerboard.TileState.Black);
             }
         }
 

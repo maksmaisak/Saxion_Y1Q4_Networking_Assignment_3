@@ -17,22 +17,31 @@ public class Checkerboard : IUnifiedSerializable
         Black,
         White
     }
+    
+    static readonly Vector2Int[] DiagonalDirections =
+    {
+        new Vector2Int( 1,  1),
+        new Vector2Int(-1,  1),
+        new Vector2Int(-1, -1),
+        new Vector2Int( 1, -1)
+    };
 
     public delegate void PieceHandler(Checkerboard sender, Vector2Int position);
     public event PieceHandler OnPieceAdded;
     public event PieceHandler OnPieceRemoved;
+    public event PieceHandler OnMultiCapture;
     
     public delegate void PieceMoveHandler(Checkerboard sender, Vector2Int origin, Vector2Int target);
     public event PieceMoveHandler OnPieceMoved;
-
-    public TileState currentPlayer { get; private set; }
+    
+    public TileState currentPlayerColor { get; private set; }
     
     private TileState[,] tiles;
     public Vector2Int size { get; private set; }
 
     public Checkerboard()
     {
-        currentPlayer = TileState.White;
+        currentPlayerColor = TileState.White;
         
         size = new Vector2Int(Size, Size);
         tiles = new TileState[size.x, size.y];
@@ -40,7 +49,7 @@ public class Checkerboard : IUnifiedSerializable
 
     public Checkerboard(Checkerboard checkerboard)
     {
-        currentPlayer = checkerboard.currentPlayer;
+        currentPlayerColor = checkerboard.currentPlayerColor;
         size = checkerboard.size;
         tiles = (TileState[,])checkerboard.tiles.Clone();
     }
@@ -50,23 +59,37 @@ public class Checkerboard : IUnifiedSerializable
         if (IsOutOfBounds(origin)) return false;
         if (IsOutOfBounds(target)) return false;
 
-        if (GetAt(origin) != currentPlayer) return false; // Wrong player's piece
+        if (GetAt(origin) != currentPlayerColor) return false; // Wrong player's piece
         if (GetAt(target) != TileState.None) return false; // Target obstructed
 
         Vector2Int delta = target - origin;
         Vector2Int direction = new Vector2Int(Math.Sign(delta.x), Math.Sign(delta.y));
         Vector2Int absDelta  = new Vector2Int(      Abs(delta.x),       Abs(delta.y));
-        
+
+        if ((direction.y < 0) == (currentPlayerColor == TileState.White)) return false; // Wrong direction
         if (absDelta.x != absDelta.y) return false; // Not diagonal
         if (absDelta.x == 0) return false; // No move
         if (absDelta.x >  2) return false; // Too long
 
         if (absDelta.x == 2)
         {
-            return GetAt(origin + direction) == GetOppositePlayer(currentPlayer); // Can't capture
+            return GetAt(origin + direction) == GetOppositePlayer(currentPlayerColor); // Can't capture
         }
 
         return true;
+    }
+
+    public bool IsCapturePossibleOutOf(Vector2Int origin)
+    {
+        Assert.IsFalse(IsOutOfBounds(origin));
+        
+        foreach (Vector2Int direction in DiagonalDirections)
+        {
+            Vector2Int afterCapturePos = origin + direction * 2;
+            if (IsValidMove(origin, afterCapturePos)) return true;
+        }
+
+        return false;
     }
     
     /// Returns false if the move is invalid.
@@ -86,10 +109,18 @@ public class Checkerboard : IUnifiedSerializable
             Transport(origin, target);
             
             Vector2Int direction = new Vector2Int(Math.Sign(delta.x), Math.Sign(delta.y));
-            RemoveAt(origin + direction);
+            RemovePieceAt(origin + direction);
+            
+            // Don't switch players if a multi-capture is possible
+            if (IsCapturePossibleOutOf(target))
+            {
+                OnMultiCapture?.Invoke(this, target);
+                return true;
+            }
         }
-
-        currentPlayer = GetOppositePlayer(currentPlayer);
+        
+        currentPlayerColor = GetOppositePlayer(currentPlayerColor);
+        
         return true;
     }
 
@@ -122,19 +153,11 @@ public class Checkerboard : IUnifiedSerializable
     public IReadOnlyCollection<Vector2Int> GetValidMoveDestinations(Vector2Int origin)
     {
         Assert.IsFalse(IsOutOfBounds(origin));
-        Assert.AreEqual(currentPlayer, GetAt(origin));
-
-        Vector2Int[] deltas =
-        {
-            new Vector2Int( 1,  1),
-            new Vector2Int(-1,  1),
-            new Vector2Int(-1, -1),
-            new Vector2Int( 1, -1)
-        };
+        Assert.AreEqual(currentPlayerColor, GetAt(origin));
         
         var targets = new List<Vector2Int>();
 
-        foreach (Vector2Int delta in deltas)
+        foreach (Vector2Int delta in DiagonalDirections)
         {
             Vector2Int adjacentPos = origin + delta;
             Vector2Int afterCapturePos = adjacentPos + delta;
@@ -152,7 +175,7 @@ public class Checkerboard : IUnifiedSerializable
         return targets;
     }
     
-    public void AddAt(Vector2Int position, TileState pieceColor)
+    public void AddPieceAt(Vector2Int position, TileState pieceColor)
     {
         Assert.IsFalse(IsOutOfBounds(position));
         Assert.AreEqual(TileState.None, GetAt(position));
@@ -165,9 +188,9 @@ public class Checkerboard : IUnifiedSerializable
     
     public void Serialize(IUnifiedSerializer s)
     {
-        byte value = (byte)currentPlayer;
+        byte value = (byte)currentPlayerColor;
         s.Serialize(ref value);
-        currentPlayer = (TileState)value;
+        currentPlayerColor = (TileState)value;
 
         Vector2Int sizeValue = size;
         s.Serialize(ref sizeValue);
@@ -184,7 +207,7 @@ public class Checkerboard : IUnifiedSerializable
         OnPieceMoved?.Invoke(this, origin, destination);
     }
 
-    private void RemoveAt(Vector2Int position)
+    private void RemovePieceAt(Vector2Int position)
     {
         SetAt(position, TileState.None);
         

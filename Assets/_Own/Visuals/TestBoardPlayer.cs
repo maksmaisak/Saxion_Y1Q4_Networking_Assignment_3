@@ -23,5 +23,7 @@ public class TestBoardPlayer : MonoBehaviour
     {
         Debug.Log($"OnMoveRequest: from {origin} to {target}");
         checkerboard.TryMakeMove(origin, target);
+        
+        checkerboardView.SetOwnColor(checkerboard.currentPlayerColor);
     }
 }

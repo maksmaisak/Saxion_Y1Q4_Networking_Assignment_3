@@ -25,6 +25,7 @@ public class ClientStateInTable : FsmState<Client>,
         Assert.IsNotNull(uiPanel);
 
         checkerboardView.gameObject.SetActive(true);
+        checkerboardView.SetControlsEnabled(false);
         checkerboardView.OnMoveRequest += OnMoveRequest;
 
         uiPanel.EnableGUI();
@@ -102,6 +103,7 @@ public class ClientStateInTable : FsmState<Client>,
 
         bool isThisWhite = message.whitePlayerId == agent.playerInfo.id;
         checkerboardView.SetOwnColor(isThisWhite ? Checkerboard.TileState.White : Checkerboard.TileState.Black);
+        checkerboardView.SetControlsEnabled(true);
     }
     
     public void On(NotifyPlayerTurn message)

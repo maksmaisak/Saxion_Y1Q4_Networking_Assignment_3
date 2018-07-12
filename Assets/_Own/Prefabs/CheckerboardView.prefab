@@ -139,7 +139,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9d98a8f2b8a4719b161eafb907684fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boardView: {fileID: 114846393181896570}
+  checkerboardView: {fileID: 114846393181896570}
 --- !u!114 &114846393181896570
 MonoBehaviour:
   m_ObjectHideFlags: 1

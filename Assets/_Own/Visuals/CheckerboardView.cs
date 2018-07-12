@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -17,6 +18,8 @@ public class CheckerboardView : MonoBehaviour
     [Space] 
     [SerializeField] ColorOverlay overlayPrefab;
     [SerializeField] Transform overlaysParent;
+    [Space]
+    [SerializeField] float rotationDuration = 1f;
 
     public delegate void OnMoveRequestHandler(CheckerboardView sender, Vector2Int origin, Vector2Int target);
     public event OnMoveRequestHandler OnMoveRequest;
@@ -25,7 +28,9 @@ public class CheckerboardView : MonoBehaviour
     private GridCell[,] grid;
 
     private Vector2Int? currentlySelectedPosition;
-    private bool controlsEnabled;
+    private Checkerboard.TileState ownColor = Checkerboard.TileState.White;
+    private bool controlsEnabled = true;
+    private bool canSelect => controlsEnabled && ownColor == checkerboard.currentPlayerColor;
     
     private struct GridCell
     {
@@ -45,25 +50,28 @@ public class CheckerboardView : MonoBehaviour
         checkerboard.OnPieceAdded   += CheckerboardOnPieceAdded;
         checkerboard.OnPieceMoved   += CheckerboardOnPieceMoved;
         checkerboard.OnPieceRemoved += CheckerboardOnPieceRemoved;
+        checkerboard.OnMultiCapture += CheckerboardOnMultiCapture;
     }
     
-    public void SetOwnColor(Checkerboard.TileState tileState)
+    public void SetOwnColor(Checkerboard.TileState newOwnColor)
     {
-        Assert.AreNotEqual(Checkerboard.TileState.None, tileState);
+        Assert.AreNotEqual(Checkerboard.TileState.None, newOwnColor);
 
-        float targetRotation = tileState == Checkerboard.TileState.Black ? 180f : 0f;
-        transform.localRotation = Quaternion.Euler(0f, targetRotation, 0f);
-        
-        // TODO also enable/disable controls based on own color.
+        ownColor = newOwnColor;
+
+        float targetRotation = newOwnColor == Checkerboard.TileState.Black ? 180f : 0f;
+        transform.DOKill(complete: true);
+        transform.DOLocalRotate(Vector3.up * targetRotation, rotationDuration).SetEase(Ease.InOutQuad);
     }
     
     public void Clear()
     {
         if (checkerboard != null)
         {
-            checkerboard.OnPieceAdded -= CheckerboardOnPieceAdded;
-            checkerboard.OnPieceMoved -= CheckerboardOnPieceMoved;
+            checkerboard.OnPieceAdded   -= CheckerboardOnPieceAdded;
+            checkerboard.OnPieceMoved   -= CheckerboardOnPieceMoved;
             checkerboard.OnPieceRemoved -= CheckerboardOnPieceRemoved;
+            checkerboard.OnMultiCapture -= CheckerboardOnMultiCapture;
             checkerboard = null;
         }
 
@@ -71,6 +79,8 @@ public class CheckerboardView : MonoBehaviour
         DestroyAllChildren(overlaysParent);
         DestroyAllChildren(piecesParent);
         grid = null;
+
+        ownColor = Checkerboard.TileState.White;
     }
 
     public void SetControlsEnabled(bool newControlsEnabled)
@@ -144,21 +154,10 @@ public class CheckerboardView : MonoBehaviour
     
     private void PieceViewOnClick(PieceView sender, Vector2Int gridPosition)
     {
-        if (!controlsEnabled) return;
-        if (checkerboard.GetAt(gridPosition) != checkerboard.currentPlayer) return;
-        
-        if (currentlySelectedPosition.HasValue)
-        {
-            ClearSelection();
-        }
+        if (!canSelect) return;
+        if (checkerboard.GetAt(gridPosition) != checkerboard.currentPlayerColor) return;
 
-        grid[gridPosition.x, gridPosition.y].overlay.SetActive(true);
-        currentlySelectedPosition = gridPosition;
-
-        foreach (Vector2Int position in checkerboard.GetValidMoveDestinations(gridPosition))
-        {
-            grid[position.x, position.y].overlay.SetActive(true);
-        }
+        Select(gridPosition);
     }
 
     private void OnClickTileView(BoardTile sender, Vector2Int gridPosition)
@@ -169,9 +168,10 @@ public class CheckerboardView : MonoBehaviour
 
         Vector2Int origin = currentlySelectedPosition.Value;
         Vector2Int target = gridPosition;
-        OnMoveRequest?.Invoke(this, origin, target);
         
         ClearSelection();
+
+        OnMoveRequest?.Invoke(this, origin, target);
     }
 
     private void CheckerboardOnPieceAdded(Checkerboard sender, Vector2Int position)
@@ -193,13 +193,35 @@ public class CheckerboardView : MonoBehaviour
         grid[target.x, target.y].pieceView = pieceView;
         grid[origin.x, origin.y].pieceView = null;
     }
-    
+
+    private void CheckerboardOnMultiCapture(Checkerboard sender, Vector2Int position)
+    {
+        if (ownColor != sender.currentPlayerColor) return;
+
+        Select(position);
+    }
+
     private void CheckerboardOnPieceRemoved(Checkerboard sender, Vector2Int position)
     {
         ClearSelection();
         
         grid[position.x, position.y].pieceView.Capture();
         grid[position.x, position.y].pieceView = null;
+    }
+
+    private void Select(Vector2Int gridPosition)
+    {
+        if (currentlySelectedPosition.HasValue)
+        {
+            ClearSelection();
+        }
+        
+        grid[gridPosition.x, gridPosition.y].overlay.SetActive(true);
+        currentlySelectedPosition = gridPosition;
+        foreach (Vector2Int position in checkerboard.GetValidMoveDestinations(gridPosition))
+        {
+            grid[position.x, position.y].overlay.SetActive(true);
+        }
     }
     
     private void ClearSelection()

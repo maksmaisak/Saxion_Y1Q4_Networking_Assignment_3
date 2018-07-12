@@ -88,7 +88,7 @@ public class Table : MyBehaviour,
         }
 
         AnnounceMove(request.origin, request.target);
-            
+                    
         Checkerboard.TileState victorColor = checkerboard.CheckVictory();
         if (victorColor != Checkerboard.TileState.None)
         {
@@ -102,10 +102,11 @@ public class Table : MyBehaviour,
                             
             return;
         }
+
+        currentPlayerIsB = checkerboard.currentPlayerColor == Checkerboard.TileState.Black;
         
-        // TODO Check double capture
         // only change if not double capture
-        currentPlayerIsB = !currentPlayerIsB;
+        //currentPlayerIsB = !currentPlayerIsB;
         
         AnnounceNewTurn(GetCurrentPlayer());
     }

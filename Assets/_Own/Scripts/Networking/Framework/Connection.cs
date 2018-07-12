@@ -22,7 +22,9 @@ public class Connection : MonoBehaviour
     
     public State state { get; private set; }
     public float timeOfLastReceive { get; private set; }
+    public float timeOfLastSend { get; private set; }
     public float timeSinceLastReceive => Time.time - timeOfLastReceive;
+    public float timeSinceLastSend => Time.time - timeOfLastSend;
     
     private TcpClient client;
     private NetworkStream networkStream;
@@ -33,6 +35,7 @@ public class Connection : MonoBehaviour
     
     private bool isInitialized;
     private bool didReceiveSinceLastUpdate;
+    private bool didSendSinceLastUpdate;
 
     private Thread receivingThread;
     private Thread sendingThread;
@@ -49,6 +52,7 @@ public class Connection : MonoBehaviour
         isInitialized = true;
         
         timeOfLastReceive = Time.time;
+        timeOfLastSend = Time.time;
         state = State.Running;
         
         receivingThread = new Thread(ReceivingThread) {IsBackground = true};
@@ -85,6 +89,12 @@ public class Connection : MonoBehaviour
         {
             timeOfLastReceive = Time.time;
             didReceiveSinceLastUpdate = false;
+        }
+
+        if (didSendSinceLastUpdate)
+        {
+            timeOfLastSend = Time.time;
+            didSendSinceLastUpdate = false;
         }
 
         INetworkMessage message;
@@ -164,6 +174,7 @@ public class Connection : MonoBehaviour
             try
             {
                 NetworkMessageSerializer.Serialize(message, networkStream);
+                didSendSinceLastUpdate = true;
             }
             catch (Exception ex)
             {

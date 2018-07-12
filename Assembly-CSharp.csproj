@@ -86,6 +86,7 @@
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\StatelessUnifiedSerializable.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Serialization\UnifiedSerializerExtensions.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\DisconnectMessage.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Messages\HeartbeatMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\MakeMove.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyGameStart.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Messages\InTable\NotifyMakeMove.cs" />

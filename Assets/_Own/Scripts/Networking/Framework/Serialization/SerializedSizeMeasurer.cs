@@ -1,3 +1,6 @@
+using System;
+using System.Text;
+
 /// Pretends to be a writer IUnifiedSerializer, but actually does nothing but 
 /// keep track of how much data it is asked to serialize. 
 /// This can be used to find out how much data an object will take up
@@ -11,7 +14,14 @@ public class SerializedSizeMeasurer : IUnifiedSerializer
 
     public int measuredSize { get; set; }
 
-    /// Measures the serilized size of the given object, 
+    private readonly Encoding encoding;
+
+    public SerializedSizeMeasurer(Encoding encoding)
+    {
+        this.encoding = encoding;
+    }
+
+    /// Measures the serialized size of the given object, 
     /// resetting before and after.
     public int Measure(IUnifiedSerializable obj)
     {
@@ -48,7 +58,7 @@ public class SerializedSizeMeasurer : IUnifiedSerializer
 
     public void Serialize(ref string value)
     {
-        measuredSize += sizeof(char) * value.Length;
+        measuredSize += encoding.GetByteCount(value);
     }
 
     public void Serialize(ref byte[] value, int count)
@@ -58,7 +68,7 @@ public class SerializedSizeMeasurer : IUnifiedSerializer
 
     public void Serialize(ref char[] value, int count)
     {
-        measuredSize += sizeof(char) * count;
+        measuredSize += encoding.GetByteCount(value, 0, count);
     }
 
     #endregion

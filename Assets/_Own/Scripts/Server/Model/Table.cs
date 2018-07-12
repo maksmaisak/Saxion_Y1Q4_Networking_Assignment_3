@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 public class Table : MyBehaviour,
-    IEventReceiver<MakeMove>
+    IEventReceiver<MakeMove>,
+    IEventReceiver<NewChatMessageClientToServer>
 {
     private ServerPlayer playerA;
     private ServerPlayer playerB;
@@ -109,6 +110,14 @@ public class Table : MyBehaviour,
         //currentPlayerIsB = !currentPlayerIsB;
         
         AnnounceNewTurn(GetCurrentPlayer());
+    }
+    
+    public void On(NewChatMessageClientToServer message)
+    {
+        if (message.originConnection != playerA?.connection && message.originConnection != playerB?.connection) return;
+
+        ServerPlayer sender = message.originConnection == playerA.connection ? playerA : playerB;
+        SendAllAtTable(NotifyChatEntryMessage.MakeWithTimestamp($"{sender.nickname}: {message.message}"));
     }
 
     // TODO Have a system of multiple event queues, so you don't have to filter stuff out of the global one.

@@ -15,19 +15,15 @@ public class ClientStateNotConnected : FsmState<Client>
     
     private CancellationTokenSource asyncCancellationTokenSource;
     private Task<TcpClient> connectionTask;
-
-    private string enteredNickname;
     
     public override void Enter()
     {
         base.Enter();
 
-        agent.playerId = 0;
+        agent.playerInfo = new PlayerInfo();
         
         connectPanel.EnableGUI();
         connectPanel.RegisterButtonConnectClickAction(OnConnectButtonClicked);
-        
-        enteredNickname = null;
     }
 
     public override void Exit()
@@ -76,7 +72,7 @@ public class ClientStateNotConnected : FsmState<Client>
         if (connectionTask != null) return;
         if (!connectPanel.Validate()) return;
 
-        enteredNickname = connectPanel.GetNickname();
+        agent.playerInfo.nickname = connectPanel.GetNickname();
         StartAsyncConnectionTask();
     }
 
@@ -133,7 +129,7 @@ public class ClientStateNotConnected : FsmState<Client>
 
         Connection connection = MakeConnection(connectionTask.Result);
         agent.SetConnectionToServer(connection);
-        agent.connectionToServer.Send(new JoinServerRequest(enteredNickname));
+        agent.connectionToServer.Send(new JoinServerRequest(agent.playerInfo.nickname));
         
         agent.fsm.ChangeState<ClientStateJoining>();
     }

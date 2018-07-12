@@ -65,7 +65,11 @@ public static class UnifiedSerializerExtensions
         {
             serializable = new T();
         }
-
+        else
+        {
+            Assert.IsFalse(serializable == null, "Serializing a null is not supported yet. Prefix it with a boolean describing if it's a null or not manually.");
+        }
+        
         serializable.Serialize(s);
     }
 

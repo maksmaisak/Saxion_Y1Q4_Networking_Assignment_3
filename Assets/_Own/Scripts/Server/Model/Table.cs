@@ -10,7 +10,7 @@ public class Table : MyBehaviour,
     private ServerPlayer playerB;
     private bool currentPlayerIsB;
     
-    private readonly Checkerboard checkerboard = CheckersHelper.MakeDefaultCheckerboard();
+    private Checkerboard checkerboard = CheckersHelper.MakeDefaultCheckerboard();
 
     private bool isPlaying;
 
@@ -20,13 +20,13 @@ public class Table : MyBehaviour,
     {
         Assert.IsNotNull(newPlayer);
         Assert.IsTrue(playerA == null || playerB == null);
-        
+
         if (playerA == null) playerA = newPlayer;
         else playerB = newPlayer;
         
-        newPlayer.connection.Send(MakeTableStateMessage());
+        SendTableStateMessage(newPlayer);
         
-        SendAllAtTable(new NotifyPlayerJoinedTable(newPlayer.playerId, newPlayer.nickname)); 
+        SendAllAtTable(new NotifyPlayerJoinedTable(GetPlayerInfo(newPlayer))); 
         SendAllAtTable(MakeServerChatMessage($"{newPlayer.nickname}: joined the table"));
     }
 
@@ -34,9 +34,7 @@ public class Table : MyBehaviour,
     {
         if (!isPlaying && isFull)
         {
-            SendAllAtTable(new NotifyGameStart(playerA.playerId));
-            SendAllAtTable(MakeServerChatMessage("The game is starting."));
-            
+            StartNewGame();
             AnnounceNewTurn(GetCurrentPlayer());
             
             isPlaying = true;
@@ -49,13 +47,25 @@ public class Table : MyBehaviour,
         if (playerB) playerB.connection.Send(message);
     }
     
-    private INetworkMessage MakeTableStateMessage()
+    private void SendTableStateMessage(ServerPlayer newPlayer)
     {
-        return new NotifyTableState
+        var message = new NotifyTableState(checkerboard);
+        
+        ServerPlayer otherPlayer = newPlayer == playerA ? playerB : playerA;
+        if (otherPlayer)
         {
-            checkerboard = checkerboard,
-            playerANickname = playerA?.nickname,
-            playerBNickname = playerB?.nickname
+            message.otherPlayerInfo = GetPlayerInfo(otherPlayer);
+        }
+
+        newPlayer.connection.Send(message);
+    }
+
+    private static PlayerInfo GetPlayerInfo(ServerPlayer player)
+    {
+        return new PlayerInfo
+        {
+            id = player.playerId,
+            nickname = player.nickname
         };
     }
 
@@ -66,22 +76,37 @@ public class Table : MyBehaviour,
         if (!IsFromCorrectPlayer(request))
         {
             Debug.LogWarning("Request to move a piece came from the wrong player.");
+            SendAllAtTable(MakeServerChatMessage("Warning: Request to make invalid move."));
             return;
         }
 
         if (!checkerboard.TryMakeMove(request.origin, request.target))
         {
             Debug.LogWarning("Request to make invalid move.");
+            SendAllAtTable(MakeServerChatMessage("Warning: Request to make invalid move."));
+            return;
+        }
+
+        AnnounceMove(request.origin, request.target);
+            
+        Checkerboard.TileState victorColor = checkerboard.CheckVictory();
+        if (victorColor != Checkerboard.TileState.None)
+        {
+            ServerPlayer victor = victorColor == Checkerboard.TileState.White ? playerA : playerB;
+            SendAllAtTable(new NotifyVictory(victor.playerId));
+            SendAllAtTable(MakeServerChatMessage($"{victor.nickname} wins!"));
+
+            checkerboard = CheckersHelper.MakeDefaultCheckerboard();
+            StartNewGame();
+            AnnounceNewTurn(GetCurrentPlayer());
+                            
             return;
         }
         
-        SendAllAtTable(new NotifyMakeMove(request.origin, request.target));
-        SendAllAtTable(MakeServerChatMessage($"{GetCurrentPlayer().nickname}: {request.origin} to {request.target}"));
-        
         // TODO Check double capture
-        // TODO Check victory
-        
+        // only change if not double capture
         currentPlayerIsB = !currentPlayerIsB;
+        
         AnnounceNewTurn(GetCurrentPlayer());
     }
 
@@ -105,6 +130,19 @@ public class Table : MyBehaviour,
         Assert.IsTrue(isFull);
         
         return currentPlayerIsB ? playerB : playerA;
+    }
+    
+    private void StartNewGame()
+    {
+        checkerboard = CheckersHelper.MakeDefaultCheckerboard();
+        SendAllAtTable(new NotifyGameStart(checkerboard, playerA.playerId));
+        SendAllAtTable(MakeServerChatMessage("The game is starting."));
+    }
+
+    private void AnnounceMove(Vector2Int origin, Vector2Int target)
+    {
+        SendAllAtTable(new NotifyMakeMove(origin, target));
+        SendAllAtTable(MakeServerChatMessage($"{GetCurrentPlayer().nickname}: {origin} to {target}"));
     }
 
     private void AnnounceNewTurn(ServerPlayer player)

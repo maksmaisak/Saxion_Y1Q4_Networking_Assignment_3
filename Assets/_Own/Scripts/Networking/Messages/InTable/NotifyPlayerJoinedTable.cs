@@ -1,20 +1,19 @@
 ﻿
 public class NotifyPlayerJoinedTable : NetworkMessage<NotifyPlayerJoinedTable>
 {
-    public uint playerId;
-    public string nickname;
+    public PlayerInfo playerInfo;
     
     public NotifyPlayerJoinedTable() {}
     
-    public NotifyPlayerJoinedTable(uint playerId, string nickname)
+    public NotifyPlayerJoinedTable(PlayerInfo playerInfo)
     {
-        this.playerId = playerId;
-        this.nickname = nickname;
+        this.playerInfo = playerInfo;
     }
 
     public override void Serialize(IUnifiedSerializer s)
     {
-        s.Serialize(ref playerId);
-        s.Serialize(ref nickname);
+        s.Serialize(ref playerInfo);
     }
+
+    public override string ToString() => $"{base.ToString()}: {playerInfo.id}, {playerInfo.nickname}";
 }

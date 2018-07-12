@@ -40,14 +40,14 @@ public class Connection : MonoBehaviour
     private Thread receivingThread;
     private Thread sendingThread;
 
-    public void Initialize(TcpClient client)
+    public void Initialize(TcpClient connectedClient)
     {
         Assert.IsFalse(isInitialized, this + "is already initialized.");
         Assert.AreEqual(State.NotStarted, state, this + " has already been started!");
-        Assert.IsNotNull(client);
+        Assert.IsNotNull(connectedClient);
         
-        this.client = client;
-        networkStream = client.GetStream();
+        client = connectedClient;
+        networkStream = connectedClient.GetStream();
         
         isInitialized = true;
         

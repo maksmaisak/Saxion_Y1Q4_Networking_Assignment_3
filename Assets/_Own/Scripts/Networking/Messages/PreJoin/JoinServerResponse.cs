@@ -41,4 +41,6 @@ public class JoinServerResponse : NetworkMessage<JoinServerResponse>
             s.Serialize(ref playerId);
         }
     }
+
+    public override string ToString() => $"{base.ToString()}:" + (isReject ? $"Reject: {rejectionMessage}" : $"Accept: playerId: {playerId}");
 }

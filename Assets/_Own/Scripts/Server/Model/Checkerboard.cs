@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using static UnityEngine.Mathf;
+using Random = UnityEngine.Random;
 
 public class Checkerboard : IUnifiedSerializable
 {
@@ -89,6 +91,20 @@ public class Checkerboard : IUnifiedSerializable
 
         currentPlayer = GetOppositePlayer(currentPlayer);
         return true;
+    }
+
+    public TileState CheckVictory()
+    {
+        /*// TEMP Test
+        if (Random.value < 0.25f)
+        {
+            return Random.value < 0.5f ? TileState.Black : TileState.White;
+        }*/
+        
+        if (tiles.Cast<TileState>().All(t => t != TileState.Black)) return TileState.White;        
+        if (tiles.Cast<TileState>().All(t => t != TileState.White)) return TileState.Black;
+
+        return TileState.None;
     }
     
     public TileState GetAt(Vector2Int position)

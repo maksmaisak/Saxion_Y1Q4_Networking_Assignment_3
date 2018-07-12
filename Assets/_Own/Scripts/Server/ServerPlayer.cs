@@ -9,7 +9,8 @@ public class ServerPlayer : MyBehaviour, IAgent,
 {
     public FiniteStateMachine<ServerPlayer> fsm { get; private set; }
     public Connection connection { get; private set; }
-
+    public Table table { get; set; }
+    
     public uint   playerId { get; set; }
     public string nickname { get; set; }
     
@@ -27,6 +28,8 @@ public class ServerPlayer : MyBehaviour, IAgent,
     {
         base.OnDestroy();
 
+        if (table) table.RemovePlayer(this);
+        
         var server = Server.Instance;
         if (server) server.joinedPlayers.Remove(this);
     }
@@ -47,5 +50,16 @@ public class ServerPlayer : MyBehaviour, IAgent,
     private void HandleDisconnect()
     {        
         Destroy(gameObject);
+    }
+
+    public void Kick()
+    {
+        if (connection.state == Connection.State.Closing || connection.state == Connection.State.Closed)
+        {
+            return;
+        }
+        
+        connection.Send(new DisconnectMessage());
+        connection.Close();
     }
 }

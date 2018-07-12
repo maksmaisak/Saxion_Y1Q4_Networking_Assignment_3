@@ -22,7 +22,7 @@ public class ServerPlayerStateAwaitingServerJoinRequest : FsmState<ServerPlayer>
         if (timeLeftForHandshake > 0f) return;
 
         Debug.Log("Client handshake timeout. Kicking client.");
-        KickClient();
+        agent.Kick();
     }
 
     public void On(JoinServerRequest request)
@@ -39,7 +39,7 @@ public class ServerPlayerStateAwaitingServerJoinRequest : FsmState<ServerPlayer>
         if (!request.GetIsValid())
         {
             agent.connection.Send(JoinServerResponse.MakeReject("Invalid JoinServerRequest"));
-            KickClient();
+            agent.Kick();
             return true;
         }
         
@@ -48,7 +48,7 @@ public class ServerPlayerStateAwaitingServerJoinRequest : FsmState<ServerPlayer>
         if (Server.Instance.joinedPlayers.Any(p => p.nickname == request.nickname))
         {
             agent.connection.Send(JoinServerResponse.MakeReject($"Username {request.nickname} is already taken"));
-            KickClient();
+            agent.Kick();
             return true;
         }
 
@@ -62,11 +62,5 @@ public class ServerPlayerStateAwaitingServerJoinRequest : FsmState<ServerPlayer>
         agent.playerId = Server.Instance.GetNextPlayerId();
 
         agent.connection.Send(JoinServerResponse.MakeAccept(agent.playerId));
-    }
-    
-    private void KickClient()
-    {
-        agent.connection.Send(new DisconnectMessage());
-        agent.connection.Close();
     }
 }

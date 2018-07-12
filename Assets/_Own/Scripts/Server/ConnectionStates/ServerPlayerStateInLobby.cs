@@ -3,14 +3,17 @@ using UnityEngine;
 
 public class ServerPlayerStateInLobby : FsmState<ServerPlayer>,
     IEventReceiver<JoinTableRequest>
-{
+{   
     public void On(JoinTableRequest request)
     {
         if (request.originConnection != agent.connection) return;
         if (RejectIfNeeded(request)) return;
         
         agent.connection.Send(JoinTableResponse.Accept);
-        Server.Instance.GetNonFullTable().AddPlayer(agent);
+        
+        agent.table = Server.Instance.GetNonFullTable();
+        agent.table.AddPlayer(agent);
+        
         agent.fsm.ChangeState<ServerPlayerStateInTable>();
     }
 

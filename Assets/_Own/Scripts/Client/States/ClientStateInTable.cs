@@ -18,6 +18,8 @@ public class ClientStateInTable : FsmState<Client>,
 
     private Checkerboard checkerboard;
     private PlayerInfo? otherPlayerInfo;
+
+    private bool isPlaying;
     
     public override void Enter()
     {
@@ -34,6 +36,8 @@ public class ClientStateInTable : FsmState<Client>,
         uiPanel.RegisterButtonDisconnectClickAction(OnClickButtonDisconnect);
         
         uiPanel.SetStatusText("Awaiting the other player");
+
+        isPlaying = false;
     }
 
     public override void Exit()
@@ -97,6 +101,7 @@ public class ClientStateInTable : FsmState<Client>,
     public void On(NotifyGameStart message)
     {
         Assert.IsTrue(isEntered);
+        isPlaying = true;
 
         checkerboard = message.checkerboard;
         checkerboardView.Clear();

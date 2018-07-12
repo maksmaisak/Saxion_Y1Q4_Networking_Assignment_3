@@ -31,6 +31,21 @@ public class Table : MyBehaviour,
         SendAllAtTable(MakeServerChatMessage($"{newPlayer.nickname}: joined the table"));
     }
 
+    public void RemovePlayer(ServerPlayer player)
+    {
+        Assert.IsTrue(player == playerA || player == playerB);
+
+        if (player == playerA) playerA = null;
+        else playerB = null;
+        
+        SendAllAtTable(new NotifyPlayerLeftTable(player.playerId, player.nickname));
+        SendAllAtTable(MakeServerChatMessage($"{player.nickname}: left the table"));
+
+        playerA?.Kick();
+        playerB?.Kick();
+        Destroy(gameObject);
+    }
+
     void FixedUpdate()
     {
         if (!isPlaying && isFull)
@@ -114,25 +129,32 @@ public class Table : MyBehaviour,
     
     public void On(NewChatMessageClientToServer message)
     {
-        if (message.originConnection != playerA?.connection && message.originConnection != playerB?.connection) return;
+        if (!IsFromPlayersAtThisTable(message)) return;
 
-        ServerPlayer sender = message.originConnection == playerA.connection ? playerA : playerB;
+        ServerPlayer sender = message.originConnection == playerA?.connection ? playerA : playerB;
         SendAllAtTable(NotifyChatEntryMessage.MakeWithTimestamp($"{sender.nickname}: {message.message}"));
     }
 
     // TODO Have a system of multiple event queues, so you don't have to filter stuff out of the global one.
     private bool IsFromPlayersAtThisTable(INetworkMessage message)
     {
-        if (!isFull) return false;
-        Connection connection = message.originConnection;
-        if (connection != playerA.connection && connection != playerB.connection) return false;
+        if (playerA && message.originConnection == playerA.connection) return true;
+        if (playerB && message.originConnection == playerB.connection) return true;
 
-        return true;
+        return false;
+        
+        /*
+        if (!isFull) return false;
+
+        Connection connection = message.originConnection;
+        if (connection != playerA?.connection && connection != playerB.connection) return false;
+
+        return true;*/
     }
 
-    private bool IsFromCorrectPlayer(MakeMove request)
+    private bool IsFromCorrectPlayer(INetworkMessage message)
     {
-        return request.originConnection == GetCurrentPlayer().connection;
+        return message.originConnection == GetCurrentPlayer().connection;
     }
 
     private ServerPlayer GetCurrentPlayer()

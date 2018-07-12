@@ -12,6 +12,7 @@ public static class NetworkMessageSerializer
 {
     private const int MaxMessageSizeBytes = 512 * (1 << 10); // 512 kB
     private const int MessageReadTimeoutMs = 2000;
+    // TODO Have these belong to each connection, so that they don't use the same buffers from different threads.
     private static readonly byte[] ReadBuffer  = new byte[MaxMessageSizeBytes];
     private static readonly byte[] WriteBuffer = new byte[MaxMessageSizeBytes];
     const int TypeIndexSize = sizeof(ushort);

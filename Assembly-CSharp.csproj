@@ -74,6 +74,7 @@
     <Compile Include="Assets\_Own\Scripts\Networking\BroadcastEvents\NewConnection.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\Connection.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\ConnectionMessageVerifier.cs" />
+    <Compile Include="Assets\_Own\Scripts\Networking\Framework\HeartbeatManager.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\NetworkMessage.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\NetworkMessageAttribute.cs" />
     <Compile Include="Assets\_Own\Scripts\Networking\Framework\NetworkMessageSerializer.cs" />

@@ -29,9 +29,6 @@ public class Connection : MonoBehaviour
     private readonly ConcurrentQueue<INetworkMessage> messagesToSend    = new ConcurrentQueue<INetworkMessage>();
     private readonly ConcurrentQueue<INetworkMessage> messagesToProcess = new ConcurrentQueue<INetworkMessage>();
 
-    // Any operations with networkStream are in a ReadBlock (so they can happen simultaneously).
-    // Closing the network stream is in a WriteBlock (so nothing else can happen when it does it).
-    private readonly ReaderWriterLockSlim readWriteLocker = new ReaderWriterLockSlim();
     private readonly object locker = new object();
     
     private bool isInitialized;
@@ -150,16 +147,8 @@ public class Connection : MonoBehaviour
         
         receivingThread.Abort();
         
-        readWriteLocker.EnterWriteLock();
-        try
-        {
-            client.Close();
-            networkStream.Close();
-        }
-        finally
-        {
-            readWriteLocker.ExitWriteLock();
-        }
+        client.Close();
+        networkStream.Close();
 
         state = State.Closed;
     }
@@ -172,7 +161,6 @@ public class Connection : MonoBehaviour
             Assert.IsNotNull(message);
             Debug.Log("Sending " + message);
 
-            readWriteLocker.EnterReadLock();
             try
             {
                 NetworkMessageSerializer.Serialize(message, networkStream);
@@ -182,10 +170,6 @@ public class Connection : MonoBehaviour
                 Debug.Log("Exception while serializing a network message: " + ex);
                 Close();
                 break;
-            }
-            finally
-            {
-                readWriteLocker.ExitReadLock();
             }
         }   
     }

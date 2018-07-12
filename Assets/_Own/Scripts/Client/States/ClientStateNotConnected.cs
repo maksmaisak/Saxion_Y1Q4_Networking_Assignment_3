@@ -49,8 +49,9 @@ public class ClientStateNotConnected : FsmState<Client>
         
         if (connectionTask == null) return;
 
-        if (connectionTask.IsCanceled || connectionTask.IsFaulted)
+        if (connectionTask.IsCanceled || connectionTask.IsFaulted || (connectionTask.IsCompleted && connectionTask.Result == null))
         {
+            connectPanel.SetStatusbarText("Failed.");
             connectionTask.Dispose();
             connectionTask = null;
             return;
@@ -90,33 +91,32 @@ public class ClientStateNotConnected : FsmState<Client>
     {
         TcpClient client = null;
         
-        while (true)
+        try
         {
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                client = new TcpClient();
-                await client.ConnectAsync(remoteEndPoint.Address, remoteEndPoint.Port);
-                Assert.IsTrue(client.Connected);
+            client = new TcpClient();
+            await client.ConnectAsync(remoteEndPoint.Address, remoteEndPoint.Port);
+            Assert.IsTrue(client.Connected);
 
-                cancellationToken.ThrowIfCancellationRequested();
-               
-                Debug.Log("Connect successful.");
-                return client;
-            }
-            catch (OperationCanceledException)
-            {
-                Debug.Log("Connect cancelled.");
-                client?.Close();
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Debug.Log("Couldn't connect. Exception: " + ex);
-                client?.Close();
-            }
+            cancellationToken.ThrowIfCancellationRequested();
+           
+            Debug.Log("Connect successful.");
+            return client;
         }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("Connect cancelled.");
+            client?.Close();
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Debug.Log("Couldn't connect. Exception: " + ex);
+            client?.Close();
+            return null;
+        }
+
     }
     
     private void OnConnectionTaskComplete()

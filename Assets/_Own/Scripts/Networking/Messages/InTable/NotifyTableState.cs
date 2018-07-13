@@ -17,7 +17,7 @@ public class NotifyTableState : NetworkMessage<NotifyTableState>
     {
         s.Serialize(ref checkerboard);
 
-        // TODO Extract this into an extension mehtod for serializing any nullable.
+        // TODO Extract this into an extension method for serializing any nullable.
         bool hasOtherPlayer = otherPlayerInfo.HasValue;
         s.Serialize(ref hasOtherPlayer);
         if (hasOtherPlayer)

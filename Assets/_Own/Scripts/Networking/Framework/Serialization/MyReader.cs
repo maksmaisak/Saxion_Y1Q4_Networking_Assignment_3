@@ -11,10 +11,14 @@ public class MyReader : IUnifiedSerializer, IDisposable
 
 	public Stream BaseStream => reader.BaseStream;
 
+	private uint maxNumBytesLeft;
+
 	public MyReader(Stream stream, Encoding encoding, bool leaveOpen = true) 
 	{
 		reader = new BinaryReader(stream, encoding, leaveOpen);
 	}
+
+	#region IUnifiedSerializer Implementation
 
 	public void Serialize(ref bool    value) {value = reader.ReadBoolean();}
 	public void Serialize(ref byte    value) {value = reader.ReadByte();   }
@@ -33,6 +37,8 @@ public class MyReader : IUnifiedSerializer, IDisposable
 
 	public void Serialize(ref byte[]  value, int count) {value = reader.ReadBytes(count);}
 	public void Serialize(ref char[]  value, int count) {value = reader.ReadChars(count);}
+
+	#endregion
 
 	public void Dispose() 
 	{

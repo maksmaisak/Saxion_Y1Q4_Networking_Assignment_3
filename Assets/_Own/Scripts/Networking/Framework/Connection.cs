@@ -22,31 +22,44 @@ public class Connection : MonoBehaviour
     
     public State state { get; private set; }
     public float timeOfLastReceive { get; private set; }
+    public float timeOfLastSend { get; private set; }
     public float timeSinceLastReceive => Time.time - timeOfLastReceive;
+    public float timeSinceLastSend => Time.time - timeOfLastSend;
     
     private TcpClient client;
     private NetworkStream networkStream;
     private readonly ConcurrentQueue<INetworkMessage> messagesToSend    = new ConcurrentQueue<INetworkMessage>();
     private readonly ConcurrentQueue<INetworkMessage> messagesToProcess = new ConcurrentQueue<INetworkMessage>();
+
+    private readonly object locker = new object();
     
     private bool isInitialized;
     private bool didReceiveSinceLastUpdate;
+    private bool didSendSinceLastUpdate;
 
-    public void Initialize(TcpClient client)
+    private Thread receivingThread;
+    private Thread sendingThread;
+
+    public void Initialize(TcpClient connectedClient)
     {
         Assert.IsFalse(isInitialized, this + "is already initialized.");
         Assert.AreEqual(State.NotStarted, state, this + " has already been started!");
-        Assert.IsNotNull(client);
+        Assert.IsNotNull(connectedClient);
         
-        this.client = client;
-        networkStream = client.GetStream();
+        client = connectedClient;
+        networkStream = connectedClient.GetStream();
         
         isInitialized = true;
         
         timeOfLastReceive = Time.time;
+        timeOfLastSend = Time.time;
         state = State.Running;
-        new Thread(ReceivingThread) {IsBackground = true}.Start();
-        new Thread(SendingThread  ) {IsBackground = true}.Start();
+        
+        receivingThread = new Thread(ReceivingThread) {IsBackground = true};
+        receivingThread.Start();
+        
+        sendingThread = new Thread(SendingThread) {IsBackground = true};
+        sendingThread.Start();
     }
 
     public void Send(INetworkMessage message)
@@ -58,17 +71,16 @@ public class Connection : MonoBehaviour
 
     public void Close()
     {
-        if (state == State.Closed) return;
-        
-        //Assert.AreNotEqual(State.Closed, state, "Connection is already closed.");
-        
-        // TODO Push all messages in queue before actually closing the stream. 
-        state = State.Closing;
+        lock (locker)
+        {
+            if (state == State.Closing || state == State.Closed) return;
+            state = State.Closing;
+        }
     }
     
     void OnDestroy()
     {
-        CloseClient();
+        Close();
     }
     
     void FixedUpdate()
@@ -77,6 +89,12 @@ public class Connection : MonoBehaviour
         {
             timeOfLastReceive = Time.time;
             didReceiveSinceLastUpdate = false;
+        }
+
+        if (didSendSinceLastUpdate)
+        {
+            timeOfLastSend = Time.time;
+            didSendSinceLastUpdate = false;
         }
 
         INetworkMessage message;
@@ -95,11 +113,15 @@ public class Connection : MonoBehaviour
                 INetworkMessage message = NetworkMessageSerializer.Deserialize(networkStream);
                 message.InitializeOnReceived(this);
                 Debug.Log("Received " + message);
-                
+
                 messagesToProcess.Enqueue(message);
                 message.PostEvent();
 
                 didReceiveSinceLastUpdate = true;
+            }
+            catch (ThreadAbortException)
+            {
+                return;
             }
             catch (Exception ex)
             {
@@ -125,20 +147,18 @@ public class Connection : MonoBehaviour
         if (state == State.Closing)
         {
             SendAllMessagesInQueue();
+            CloseClient();
         }
-
-        CloseClient();
     }
 
     private void CloseClient()
     {
         if (state != State.Running && state != State.Closing) return;
         
-        lock (client)
-        {
-            client.Close();
-            networkStream.Close();
-        }
+        receivingThread.Abort();
+        
+        client.Close();
+        networkStream.Close();
 
         state = State.Closed;
     }
@@ -154,6 +174,7 @@ public class Connection : MonoBehaviour
             try
             {
                 NetworkMessageSerializer.Serialize(message, networkStream);
+                didSendSinceLastUpdate = true;
             }
             catch (Exception ex)
             {

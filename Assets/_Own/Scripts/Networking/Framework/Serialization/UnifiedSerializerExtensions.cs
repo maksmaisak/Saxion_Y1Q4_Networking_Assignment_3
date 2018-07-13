@@ -17,6 +17,20 @@ public static class UnifiedSerializerExtensions
         s.Serialize(ref value.x);
         s.Serialize(ref value.y);
     }
+    
+    public static void Serialize(this IUnifiedSerializer s, ref Vector2Int value)
+    {
+        int x = value.x;
+        int y = value.y;
+        s.Serialize(ref x);
+        s.Serialize(ref y);
+        
+        if (s.isReading)
+        {
+            value.x = x;
+            value.y = y;
+        }
+    }
 
     public static void Serialize(this IUnifiedSerializer s, ref Quaternion value)
     {
@@ -51,7 +65,11 @@ public static class UnifiedSerializerExtensions
         {
             serializable = new T();
         }
-
+        else
+        {
+            Assert.IsFalse(serializable == null, "Serializing a null is not supported yet. Prefix it with a boolean describing if it's a null or not manually.");
+        }
+        
         serializable.Serialize(s);
     }
 

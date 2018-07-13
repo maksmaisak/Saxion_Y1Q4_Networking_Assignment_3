@@ -2,5 +2,5 @@
 
 public interface IEventReceiver<in T> where T : IBroadcastEvent
 {
-    void On(T eventData);
+    void On(T message);
 }
